@@ -78,9 +78,26 @@ app.use((0, cors_1.default)({
     origin: corsOrigin,
     credentials: true,
 }));
-if (!process.env.VERCEL) {
-    void database.connect();
-}
+app.use(async (req, res, next) => {
+    try {
+        const path = req.path || "";
+        const isStatic = path.startsWith("/dist/") ||
+            path.startsWith("/images/") ||
+            path.startsWith("/client/") ||
+            path === "/favicon.ico" ||
+            /\.[a-zA-Z0-9]+$/.test(path);
+        if (isStatic) {
+            next();
+            return;
+        }
+        await database.connect();
+        next();
+    }
+    catch (error) {
+        console.error("Global DB connect error:", error);
+        res.status(500).send("Database connection failed");
+    }
+});
 (0, index_routes_1.default)(app);
 (0, index_routes_2.default)(app);
 app.locals.PrefixAdmin = system_1.systemConfig.prefixAdmin;

@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
 import HomeService from "../../services/client/home.service";
 import listenHistoryService from "../../services/client/listen.history.service";
-import * as database from "../../config/database";
 
 export const getHome = async (req: Request, res: Response): Promise<void> => {
 	try {
-		
-		await database.connect();
 		const userId = res.locals.user?.id;
 
 		const [artists, albums, topics, rankSongs, latestSongs, topFromHistory] = await Promise.all([

@@ -62,10 +62,32 @@ app.use(
         credentials: true,
     })
 );
-// Dev/local: chủ động connect trước. Trên Vercel, connect sẽ được `await` ở từng request handler.
-if (!process.env.VERCEL) {
-	void database.connect();
-}
+
+// 🚀 Global DB connect middleware (serverless-safe)
+// - Skip static assets to avoid needless DB wake-ups.
+// - Ensure all dynamic routes run after DB is connected (avoid Mongoose buffering timeout).
+app.use(async (req, res, next) => {
+	try {
+		const path = req.path || "";
+		const isStatic =
+			path.startsWith("/dist/") ||
+			path.startsWith("/images/") ||
+			path.startsWith("/client/") ||
+			path === "/favicon.ico" ||
+			/\.[a-zA-Z0-9]+$/.test(path); // file extension
+
+		if (isStatic) {
+			next();
+			return;
+		}
+
+		await database.connect();
+		next();
+	} catch (error) {
+		console.error("Global DB connect error:", error);
+		res.status(500).send("Database connection failed");
+	}
+});
 
 // Truyen app vao ham route tong de mount cac endpoint /api/v1/...
 clientRoutes(app);
