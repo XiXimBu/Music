@@ -7,11 +7,21 @@ import mongoose from "mongoose";
  */
 
 let connectPromise: Promise<typeof mongoose> | null = null;
+let configured = false;
 
 export const connect = async (): Promise<typeof mongoose> => {
 	const uri = (process.env.MONGOOSE_URL || process.env.MONGO_URI) as string | undefined;
 	if (!uri) {
 		throw new Error("MongoDB URI is missing! Set MONGOOSE_URL or MONGO_URI.");
+	}
+
+	// Cấu hình mongoose 1 lần cho toàn app (trước khi query/connect).
+	// Tắt buffering để nếu chưa connect thì fail-fast (tránh treo 10s trên serverless).
+	if (!configured) {
+		mongoose.set("bufferCommands", false);
+		// 0ms: không chờ buffering; lỗi ngay để handler có thể retry/return sớm
+		mongoose.set("bufferTimeoutMS", 0);
+		configured = true;
 	}
 
 	// Nếu đã connected thì trả về ngay (no round-trip).
@@ -21,9 +31,11 @@ export const connect = async (): Promise<typeof mongoose> => {
 	if (!connectPromise) {
 		const options = {
 			autoIndex: process.env.NODE_ENV !== "production",
-			connectTimeoutMS: 10_000,
-			serverSelectionTimeoutMS: 10_000,
+			// Mở rộng pool để chịu được Promise.all nhiều query lúc cold start
 			maxPoolSize: 10,
+			// Timeout chọn server nhanh hơn để tránh “kẹt 10s”
+			serverSelectionTimeoutMS: 5_000,
+			connectTimeoutMS: 10_000,
 		};
 
 		connectPromise = mongoose.connect(uri, options).catch((err) => {

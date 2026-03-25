@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getHome = void 0;
 const home_service_1 = __importDefault(require("../../services/client/home.service"));
 const listen_history_service_1 = __importDefault(require("../../services/client/listen.history.service"));
 const database = __importStar(require("../../config/database"));
@@ -85,4 +86,4 @@ const getHome = async (req, res) => {
         });
     }
 };
-exports.default = { getHome };
+exports.getHome = getHome;

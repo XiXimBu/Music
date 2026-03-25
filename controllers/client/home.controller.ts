@@ -3,7 +3,7 @@ import HomeService from "../../services/client/home.service";
 import listenHistoryService from "../../services/client/listen.history.service";
 import * as database from "../../config/database";
 
-const getHome = async (req: Request, res: Response): Promise<void> => {
+export const getHome = async (req: Request, res: Response): Promise<void> => {
 	try {
 		
 		await database.connect();
@@ -56,5 +56,3 @@ const getHome = async (req: Request, res: Response): Promise<void> => {
 		});
 	}
 };
-
-export default { getHome };
