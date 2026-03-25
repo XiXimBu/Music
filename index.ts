@@ -62,8 +62,10 @@ app.use(
         credentials: true,
     })
 );
-// Goi ham ket noi database ngay khi app khoi dong.
-database.connect();
+// Dev/local: chủ động connect trước. Trên Vercel, connect sẽ được `await` ở từng request handler.
+if (!process.env.VERCEL) {
+	void database.connect();
+}
 
 // Truyen app vao ham route tong de mount cac endpoint /api/v1/...
 clientRoutes(app);

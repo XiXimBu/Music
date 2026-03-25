@@ -78,7 +78,9 @@ app.use((0, cors_1.default)({
     origin: corsOrigin,
     credentials: true,
 }));
-database.connect();
+if (!process.env.VERCEL) {
+    void database.connect();
+}
 (0, index_routes_1.default)(app);
 (0, index_routes_2.default)(app);
 app.locals.PrefixAdmin = system_1.systemConfig.prefixAdmin;

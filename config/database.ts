@@ -1,35 +1,37 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-// Biến toàn cục để lưu trạng thái kết nối
-let isConnected = false; 
+/**
+ * Serverless-safe Mongoose connection cache.
+ * - Vercel functions có thể cold start liên tục → cần reuse connection/promise nếu có.
+ * - Mọi query phải chạy sau khi `await connect()` hoàn tất để tránh buffering timeout.
+ */
 
-export const connect = async (): Promise<void> => {
-  // Nếu đã kết nối rồi thì thoát luôn, không làm gì cả
-  if (isConnected) {
-    return;
-  }
+let connectPromise: Promise<typeof mongoose> | null = null;
 
-  const uri = (process.env.MONGOOSE_URL || process.env.MONGO_URI) as string | undefined;
-  
-  if (!uri) {
-    console.error('MongoDB URI is missing!');
-    return;
-  }
+export const connect = async (): Promise<typeof mongoose> => {
+	const uri = (process.env.MONGOOSE_URL || process.env.MONGO_URI) as string | undefined;
+	if (!uri) {
+		throw new Error("MongoDB URI is missing! Set MONGOOSE_URL or MONGO_URI.");
+	}
 
-  try {
-    // Cấu hình để Mongoose không log linh tinh và tối ưu kết nối
-    const options = {
-      autoIndex: true, // Tự động tạo index từ Schema (tốt cho dev)
-      connectTimeoutMS: 10000, // Timeout sau 10s nếu mạng quá lởm
-    };
+	// Nếu đã connected thì trả về ngay (no round-trip).
+	if (mongoose.connection.readyState === 1) return mongoose;
 
-    await mongoose.connect(uri, options);
-    
-    isConnected = true; // Đánh dấu đã kết nối thành công
-    console.log('Connected to MongoDB');
-    
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    // Không set isConnected = true để lần sau nó còn thử lại
-  }
+	// Nếu đang connect dở, reuse promise để tránh mở nhiều connection song song.
+	if (!connectPromise) {
+		const options = {
+			autoIndex: process.env.NODE_ENV !== "production",
+			connectTimeoutMS: 10_000,
+			serverSelectionTimeoutMS: 10_000,
+			maxPoolSize: 10,
+		};
+
+		connectPromise = mongoose.connect(uri, options).catch((err) => {
+			// Nếu connect fail, reset promise để request sau còn retry.
+			connectPromise = null;
+			throw err;
+		});
+	}
+
+	return await connectPromise;
 };
