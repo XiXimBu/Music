@@ -67,7 +67,6 @@ const getAlbumsByArtist = async (artistId: string): Promise<AlbumByArtistItem[]>
 
 const getAllSongs = async (artistId?: string): Promise<SongItem[]> => {
     try {
-        console.time("⏱️ DB Query: getAllSongs"); // Bắt đầu đếm
         const filter: {
             deleted: boolean;
             status: string;

@@ -81,7 +81,6 @@ const getAlbumsByArtist = async (artistId) => {
 };
 const getAllSongs = async (artistId) => {
     try {
-        console.time("⏱️ DB Query: getAllSongs");
         const filter = {
             deleted: false,
             status: "active",
