@@ -1,0 +1,119 @@
+extends ../../layouts/default.pug
+include ../../mixins/track-item.pug
+
+
+mixin albumCard(album)
+  if album && !album.deleted
+    div(class="flex-none w-48 md:w-64 group relative")
+      a(href=`/albums/${album.slug}`)
+        .relative.aspect-square.mb-4.overflow-hidden.rounded-2xl.shadow-lg
+          img.object-cover.w-full.h-full.transition-transform.duration-500(
+            src=album.thumbnail 
+            alt=album.title
+            class="group-hover:scale-105"
+          )
+          if album.status !== 'active'
+            .absolute.top-2.right-2.bg-black.bg-opacity-60.text-white.text-xs.px-2.py-1.rounded
+              | Hidden
+          .absolute.inset-0.bg-gradient-to-t.from-black.via-transparent.to-transparent.opacity-0(class="group-hover:opacity-100 transition-opacity")
+
+        h3.font-bold.text-lg.truncate.mb-1 #{album.title}
+        p.text-gray-500.text-sm
+          if album.releaseDate
+            span #{new Date(album.releaseDate).getFullYear()}
+          else
+            span N/A
+          |  • Album
+
+block main
+ .container.mx-auto.px-4.pb-20(class="md:px-8")
+    if artists && artists.length > 0
+      - const topArtist = artists[0]
+      section.relative.w-full.overflow-hidden.rounded-3xl.mb-12(class="min-h-[550px] md:min-h-[600px] flex items-end")
+        
+        //- 1. Lớp Nền (Background)
+        .absolute.inset-0.z-0
+          img.w-full.h-full.object-cover.blur-2xl.opacity-40.scale-110(src=topArtist.avatar)
+          .absolute.inset-0(class="bg-gradient-to-t from-surface via-surface/40 via-40% to-transparent")
+        .relative.z-10.w-full.px-6.pb-10.flex.flex-col.items-center.gap-8(
+          class="pt-[15vh] md:px-12 md:flex-row md:items-end md:text-left md:pt-0 md:pb-12"
+        )
+          
+          //- Khối Avatar ca sĩ
+          .relative.group.shrink-0
+            .absolute.-inset-1.bg-secondary.rounded-full.blur.opacity-25
+            img.relative.w-40.h-40.rounded-full.object-cover.border-4.border-surface(
+              src=topArtist.avatar 
+              class="md:w-56 md:h-56"
+            )
+            //- Huy hiệu Verified
+            .absolute.bottom-2.right-2.bg-secondary.text-on-secondary.rounded-full.shadow-lg(class="p-1.5 md:bottom-4 md:right-4")
+              span.material-symbols-outlined(class="text-[16px] md:text-[20px]" style="font-variation-settings: 'FILL' 1;") verified
+
+          //- Khối Thông tin
+          .flex-1.min-w-0(class="text-center md:text-left")
+            .space-y-1.mb-4
+              span.text-secondary.font-headline.uppercase.font-extrabold(class="text-[10px] tracking-[0.2em]") Featured Artist
+              h1.text-4xl.font-black.font-headline.tracking-tighter.text-on-surface(class="md:text-7xl lg:text-8xl truncate") #{topArtist.name}
+            
+            p.text-on-surface-variant.max-w-xl.text-sm.font-light.leading-relaxed.line-clamp-2(class="md:text-lg md:line-clamp-3") #{topArtist.description}
+            
+            //- Cụm nút bấm
+            .flex.flex-wrap.items-center.justify-center.gap-4.pt-6(class="md:justify-start")
+              button.bg-gradient-to-r.from-primary.to-primary-container.text-on-primary.px-8.py-3.rounded-full.font-bold.flex.items-center.gap-2.transition-transform(
+                type="button"
+                button-play-all
+                class="hover:scale-105 active:scale-95 shadow-lg"
+              ) 
+                span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;") play_arrow
+                | Play All
+              
+              button.px-8.py-3.rounded-full.font-bold.border.transition-all(
+                class=isFollowingArtist ? "border-secondary bg-secondary text-on-secondary" : "border-outline-variant/30 hover:bg-white/5"
+                type="button"
+                data-follow-artist-btn
+                data-artist-id=String(topArtist._id || "")
+                data-following=isFollowingArtist ? "true" : "false"
+              ) 
+                | #{isFollowingArtist ? "Unfollow" : "Follow"}
+    //- PHẦN 2: DISCOGRAPHY
+    section.py-8
+      if albums && albums.length > 0
+        .flex.justify-between.items-center.mb-6
+          div
+            h2.text-2xl.font-bold.tracking-tight Albums
+            p.text-sm.opacity-70 Tổng cộng #{albums.length} sản phẩm
+          if artist
+            a.text-primary.font-semibold(href=`/artists/${artist.slug}/albums`) Xem tất cả
+
+        .flex.overflow-x-auto.gap-6.no-scrollbar.pb-4
+          each album in albums
+            +albumCard(album)
+      else
+        .py-10.text-center.bg-surface-variant.rounded-xl
+          p.text-on-surface-variant Nghệ sĩ này chưa có album nào.
+
+    //- PHẦN 3: LAYOUT GRID
+    .grid.grid-cols-1.gap-12(class="lg:grid-cols-3")
+      section(class="lg:col-span-2")
+        .mb-8
+          h2.text-3xl.font-headline.font-bold Popular Tracks
+          p.text-on-surface-variant.text-sm Top hits based on views
+        
+        .space-y-2
+          if popularTracks && popularTracks.length > 0
+            each song in popularTracks
+              +trackItem(song)
+          else
+            p.text-center.py-8.text-on-surface-variant No tracks found.
+
+      aside.space-y-12
+        section
+          h2.text-xl.font-headline.font-bold.mb-6 Latest Release
+          .glass-card.p-6.rounded-2xl.border(class="border-outline-variant/10 bg-white/5")
+            .flex.items-center.gap-6
+              img.w-24.h-24.rounded-xl.object-cover(src="https://picsum.photos/203")
+              .space-y-1
+                h3.font-bold Hyperion Sun
+                p.text-xs.text-on-surface-variant 2 days ago
+                button.text-primary.text-xs.font-bold.uppercase.mt-2 View Album

@@ -1,0 +1,121 @@
+extends ../../layouts/default.pug
+include ../../mixins/track-item.pug
+
+block main
+  main.pt-24.pb-32.min-h-screen.hero-gradient.overflow-x-hidden
+   
+    header.relative.px-4.py-10.flex.flex-col.items-center.gap-8.overflow-hidden(
+        class="md:px-12 md:py-16 md:flex-row md:items-end md:gap-12"
+    )
+        .relative.group.w-60.h-60.shrink-0.shadow-2xl.rounded-3xl.overflow-hidden(
+            class="ring-1 ring-white/10 md:w-80 md:h-80"
+        )
+            img.w-full.h-full.object-cover.transition-transform.duration-700(
+                alt=topic.name 
+                class="group-hover:scale-110" 
+                src=topic.thumbnail
+            )
+            .absolute.inset-0.pointer-events-none(
+                class="bg-gradient-to-t from-background/90 via-transparent to-transparent"
+            )
+        
+        .flex-grow.flex.flex-col.items-center.text-center.min-w-0(
+            class="md:items-start md:text-left md:space-y-4"
+        )
+            span.font-label.text-xs.tracking-widest.text-secondary.uppercase.font-bold Featured Topic
+            
+            h1.font-black.font-headline.tracking-tighter.text-on-surface.leading-none.w-full(
+                class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl"
+            )
+                | #{topic.name}
+            
+            p.text-on-surface-variant.max-w-xl.text-base.leading-relaxed.mt-4(
+                class="md:text-lg md:mt-0"
+            )
+                | #{topic.description || "Khám phá những giai điệu tuyệt vời nhất thuộc chủ đề " + topic.name}
+            
+            //- Buttons Row
+            .flex.flex-wrap.items-center.justify-center.gap-4.pt-6(
+                class="md:justify-start md:pt-4"
+            )
+                button.flex.items-center.gap-2.px-8.py-4.text-on-primary.rounded-full.font-bold.transition-all.neon-glow-primary(
+                    type="button"
+                    button-play-all
+                    class="bg-gradient-to-r from-primary to-primary-container hover:scale-105 active:scale-95"
+                )
+                    span.material-symbols-outlined(data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;") play_arrow
+                    | Play All
+                
+                .flex.items-center.gap-3
+                    button.p-4.rounded-full.border.transition-colors.group(class="border-outline-variant/30 hover:bg-surface-variant")
+                        span.material-symbols-outlined.text-on-surface(data-icon="favorite" class="group-hover:text-secondary") favorite
+                    button.p-4.rounded-full.border.transition-colors.group(class="border-outline-variant/30 hover:bg-surface-variant")
+                        span.material-symbols-outlined.text-on-surface(data-icon="more_horiz") more_horiz
+
+    //- Content Layout
+    .px-6.grid.grid-cols-1.gap-12.mt-12(class="md:px-12 lg:grid-cols-12")
+      
+      //- Song List (Column 8)
+      section.space-y-6(class="lg:col-span-8")
+        .flex.justify-between.items-center.border-b.pb-4(class="border-outline-variant/10")
+          h2.text-2xl.font-headline.font-bold.text-primary Tracklist
+          span.text-sm.text-on-surface-variant #{songs ? songs.length : 0} tracks
+        
+        .space-y-2
+          if songs && songs.length > 0
+            each song in songs 
+              +trackItem(song)
+          else
+            .py-20.text-center
+              p.text-on-surface-variant Hiện chưa có bài hát nào trong chủ đề này.
+      
+      //- Side Sections (Column 4) 
+      aside.space-y-12(class="lg:col-span-4")
+        section
+          h3.text-xl.font-headline.font-bold.mb-6.flex.items-center.gap-2
+            span.material-symbols-outlined.text-secondary(data-icon="trending_up") trending_up
+            | Mới & Thịnh hành
+          .grid.grid-cols-1.gap-4
+            if trendingAlbums && trendingAlbums.length
+              each trend, index in trendingAlbums
+                .relative.group.rounded-3xl.overflow-hidden.glass-panel.p-4.ring-1.transition-all(class="ring-white/5 hover:ring-secondary/30")
+                  .relative.aspect-video.rounded-2xl.overflow-hidden.mb-4
+                    img.w-full.h-full.object-cover.transition-transform.duration-500(
+                      src=(trend.thumbnail || "https://via.placeholder.com/320x180")
+                      alt=trend.title
+                      class="group-hover:scale-110"
+                    )
+                    .absolute.inset-0(class="bg-gradient-to-t from-background/90 via-transparent to-transparent")
+                    .absolute.bottom-4.left-4
+                      if index === 0
+                        div(class="bg-secondary/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest border border-secondary/30") Hottest
+                      else
+                        div(class="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase tracking-widest border border-primary/30") New Release
+                  h4.font-bold.text-lg.truncate= trend.title
+                  p.text-sm.text-on-surface-variant.truncate= trend.artistName || "Unknown artist"
+            else
+              p.text-sm.text-on-surface-variant Chưa có dữ liệu thịnh hành.
+
+        //- Section: Chủ đề liên quan
+        section
+          .flex.items-center.justify-between.mb-6
+            h3.text-xl.font-headline.font-bold Chủ đề liên quan
+            a.text-xs.font-bold.text-primary.uppercase.tracking-widest.transition-colors(href="/home" class="hover:text-secondary") See all
+          .space-y-4
+            if relatedTopics && relatedTopics.length
+              each rel in relatedTopics
+                a.group.flex.items-center.gap-4.glass-panel.p-3.rounded-2xl.ring-1.transition-all.cursor-pointer(
+                  class="ring-white/5 hover:bg-surface-container-highest"
+                  href=(rel.slug ? `/topics/detail/${rel.slug}` : "/home")
+                )
+                  .w-16.h-16.rounded-xl.overflow-hidden.shrink-0
+                    img.w-full.h-full.object-cover.transition-transform(
+                      src=(rel.thumbnail || "https://via.placeholder.com/120")
+                      alt=rel.name
+                      class="group-hover:scale-110"
+                    )
+                  div.min-w-0
+                    h5.font-bold.text-on-surface.truncate= rel.name
+                    p.text-xs.text-on-surface-variant.truncate= rel.description || "Khám phá chủ đề này"
+            else
+              p.text-sm.text-on-surface-variant Chưa có chủ đề liên quan.

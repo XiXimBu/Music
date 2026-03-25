@@ -1,0 +1,81 @@
+//- mixins/search-box.pug
+
+mixin searchBox(type = "header", keyword = "")
+  //- Type có thể là: "header", "mobile", "home", "results"
+  
+  if type === "results"
+    //- Giao diện dành riêng cho trang kết quả tìm kiếm 
+    section.flex.flex-col.items-center.mb-16
+      h1(class="font-headline text-lg text-on-surface-variant mb-6 uppercase tracking-[0.2em]")
+        | Results for: 
+        span.text-primary.italic "#{keyword}"
+      
+      .w-full.max-w-2xl.relative
+      
+        div(class="absolute inset-0 bg-secondary/10 blur-2xl rounded-full")
+        
+        //- Form tìm kiếm chính 
+        form(
+          action="/search/results" 
+          method="GET"
+          class="relative flex items-center bg-surface-container-high rounded-2xl p-4 border border-outline-variant/20 shadow-2xl"
+        )
+          span.material-symbols-outlined.text-secondary.text-3xl.mr-4 search
+          
+          input.js-search-input(
+            type="text" 
+            name="keyword" 
+            placeholder="Tìm bài hát, nghệ sĩ..."
+            autocomplete="off"
+            value=keyword
+            class="bg-transparent border-none focus:ring-0 text-xl w-full text-on-surface font-light"
+          )
+          
+          button(
+            type="submit"
+            class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2 rounded-xl font-bold hover:scale-105 active:scale-95 transition-all"
+          ) Search
+          
+        //- Hộp kết quả gợi ý nhanh
+        div(
+          class="js-search-results absolute top-full left-0 w-full bg-zinc-950/90 backdrop-blur-md border border-white/10 rounded-2xl mt-2 shadow-2xl z-50 hidden max-h-96 overflow-y-auto no-scrollbar"
+        )
+
+  else
+    //- Logic cho Header, Home và Mobile
+    - let containerClass = "max-w-[400px] w-full"
+    - let inputClass = "py-2.5 pl-12 pr-4 text-sm bg-surface-container-low border-outline-variant/30"
+    - let iconClass = "left-4 text-sm"
+    
+    if type === "home"
+      - containerClass = "max-w-2xl mx-auto mb-10"
+      - inputClass = "py-5 pl-14 pr-6 text-lg bg-surface-container-highest/40 backdrop-blur-xl border-none"
+      - iconClass = "left-5 text-2xl"
+    else if type === "mobile"
+      - containerClass = "w-full"
+
+    div(class=`search-container relative group ${containerClass}`)
+      form.relative(action="/search/results" method="GET")
+        span.material-symbols-outlined.absolute.pointer-events-none.transition-colors.duration-300(
+          class=`${iconClass} text-on-surface-variant group-focus-within:text-primary`
+          style="top: 50%; transform: translateY(-50%);"
+        ) search
+        
+        input.js-search-input(
+          type="text" 
+          name="keyword" 
+          placeholder="Tìm bài hát, nghệ sĩ..."
+          autocomplete="off"
+          value=keyword 
+          class=`w-full rounded-full border transition-all duration-300 outline-none shadow-sm ${inputClass} text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/20`
+        )
+
+        if type !== "mobile"
+          button(
+            type="submit"
+            class="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 rounded-full font-bold text-xs transition-all bg-secondary text-on-secondary hover:bg-secondary-container hover:scale-105 active:scale-95 hidden md:block"
+          ) Tìm
+      
+      div(
+        class="js-search-results absolute top-full left-0 w-full bg-zinc-950/90 backdrop-blur-md border border-white/10 rounded-2xl mt-2 shadow-2xl z-50 hidden max-h-96 overflow-y-auto no-scrollbar"
+      )

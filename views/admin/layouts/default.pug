@@ -1,0 +1,142 @@
+doctype html
+html(lang="vi")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title #{pageTitle}
+
+    //- 1. Fonts & Icons
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet")
+
+    //- 2. Tailwind Library
+    script(src="https://cdn.tailwindcss.com?plugins=forms,container-queries")
+
+    //- 3. Tailwind Config
+    script.
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed-variant": "#274875",
+              "on-secondary": "#505066",
+              "secondary-fixed-dim": "#d4d2ed",
+              "tertiary-fixed-dim": "#ff7987",
+              "secondary": "#e2e0fc",
+              "inverse-on-surface": "#555555",
+              "outline": "#757575",
+              "primary-container": "#83a2d4",
+              "primary-fixed-dim": "#99b7eb",
+              "surface": "#0e0e0e",
+              "tertiary-dim": "#ff6e80",
+              "tertiary-fixed": "#ff909a",
+              "surface-dim": "#0e0e0e",
+              "error-dim": "#d7383b",
+              "surface-container-low": "#131313",
+              "surface-tint": "#a6c5fa",
+              "on-secondary-fixed": "#3e3d53",
+              "tertiary-container": "#fc536d",
+              "surface-variant": "#262626",
+              "primary-fixed": "#a6c5fa",
+              "surface-container": "#191919",
+              "secondary-dim": "#d4d2ed",
+              "surface-container-lowest": "#000000",
+              "on-secondary-fixed-variant": "#5a5971",
+              "on-tertiary-fixed-variant": "#780022",
+              "surface-bright": "#2c2c2c",
+              "primary": "#a6c5fa",
+              "on-primary": "#1d3f6b",
+              "error-container": "#9f0519",
+              "secondary-container": "#45455b",
+              "tertiary": "#ff6e80",
+              "secondary-fixed": "#e2e0fc",
+              "on-error": "#490006",
+              "on-tertiary-container": "#290006",
+              "on-error-container": "#ffa8a3",
+              "background": "#0e0e0e",
+              "surface-container-high": "#1f1f1f",
+              "on-primary-container": "#002348",
+              "error": "#ff716c",
+              "inverse-primary": "#41608e",
+              "on-tertiary-fixed": "#39000b",
+              "outline-variant": "#484848",
+              "inverse-surface": "#f9f9f9",
+              "on-surface-variant": "#ababab",
+              "on-surface": "#ffffff",
+              "on-primary-fixed": "#002a55",
+              "primary-dim": "#99b7eb",
+              "on-background": "#ffffff",
+              "on-tertiary": "#490011",
+              "on-secondary-container": "#d0cee9",
+              "surface-container-highest": "#262626"
+              
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          }
+        }
+      }
+
+    style.
+      .glass {
+            background: rgba(45, 52, 73, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(128, 131, 255, 0.15) 0%, rgba(11, 19, 38, 0.6) 100%);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(192, 193, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #464554;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+        display: none;
+        }
+    //- 4. Custom CSS
+    
+    link(rel="stylesheet", href="/admin/css/style.css")
+
+  body(class="min-h-screen flex flex-col bg-background text-white selection:bg-primary/30 selection:text-primary")
+    
+    include ../partials/header.pug
+
+    .body 
+        include ../partials/sider.pug
+        
+    main(class="flex-1 ml-64 p-8 overflow-y-auto no-scrollbar")
+      block main
+    
+
+    include ../partials/footer.pug
+
+    include ../partials/toast.pug
+
+    //- 5. JS Logic
+    //- script(src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js")
+    script(src="/admin/javascript/handle.change-status.js")
+    script(src="/admin/javascript/handle.preview.js")
+    script(src="/admin/javascript/handle.toast.js")
+    script(src="/admin/javascript/handle.sider.js")
+    //- block scripts

@@ -1,0 +1,13 @@
+@media (min-width: 768px) {
+    .md\:ml-64 {
+        margin-left: 0rem !important;
+    }
+}
+
+/* 2. Responsive cho Sider (đoạn 576px bạn muốn) */
+
+@media (min-width: 1024px) {
+    .lg\:ml-64 {
+        margin-left: 0rem !important;
+    }
+}

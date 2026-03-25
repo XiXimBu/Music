@@ -1,0 +1,144 @@
+extends ../../layouts/default.pug
+
+block main
+  //- Main Content Area
+  main(class="md:ml-64 min-h-screen relative flex flex-col")
+    
+    //- TopNavBar
+    header(class="fixed top-0 right-0 left-0 md:left-64 z-30 glass-header flex items-center justify-between px-8 py-4 font-['Manrope'] tracking-tight")
+      .flex.items-center.gap-8
+       
+        div(class="hidden lg:flex items-center gap-6")
+          a(class="text-gray-400 hover:text-gray-200 transition-colors text-sm font-medium", href="#") Dashboard
+          a(class="text-blue-400 font-bold border-b-2 border-blue-500 pb-1 text-sm", href="#") Artists
+          a(class="text-gray-400 hover:text-gray-200 transition-colors text-sm font-medium", href="#") Releases
+          a(class="text-gray-400 hover:text-gray-200 transition-colors text-sm font-medium", href="#") Analytics
+
+      .flex.items-center.gap-6
+        div(class="relative hidden sm:block")
+          span(class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm") search
+          input(
+            type="text",
+            placeholder="Search artists...",
+            class="bg-surface-container-highest/50 border-none rounded-full pl-10 pr-4 py-2 text-sm text-on-surface w-64 transition-all focus:ring-1 focus:ring-primary/50 placeholder:text-outline"
+          )
+        .flex.items-center.gap-3
+          button(class="p-2 text-on-surface-variant rounded-full transition-all active:scale-95 hover:bg-[#262626]/50")
+            span.material-symbols-outlined notifications
+          button(class="p-2 text-on-surface-variant rounded-full transition-all active:scale-95 hover:bg-[#262626]/50")
+            span.material-symbols-outlined settings
+          div(class="h-10 w-10 rounded-full overflow-hidden border-2 border-surface-container-highest ml-2")
+            img(class="w-full h-full object-cover", src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhOfEO0sYKPxbxkl54HXEqQziWQKJKLy00Q-qfyM34jLYmM2ikPp-PXpyfV4z_AA3c1JcfLU_-TO5mJWEiBn1lddOGI9X_SaNnGCVwEJhVmQ4-f_JXNeOfnX0b9zNN9psUSK9Wn-eSVOSrF1RdVC4DdnCUdA0bOGV0umceZiaZ3RkqxPCBjioyPcD7Y0AGrIESyPIm3P_Z7Pu0nvXqQkB9U6Zr8EKO9C_SURRTP_e1bKml4TMyPWVLmlg1K965Bqc9bDmdTWWUBpw", alt="Admin")
+
+    //- Content Canvas
+    .mt-24.px-8.pb-12
+      //- Breadcrumbs & Heading
+      div(class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10")
+        div
+          span(class="text-xs font-bold tracking-widest text-primary uppercase mb-2 block") Management Center
+          h3(class="text-4xl font-headline font-extrabold text-white tracking-tight") Artist Management
+        
+        button(class="bg-gradient-to-r from-primary to-primary-container text-on-primary-container px-6 py-3 rounded-full font-bold flex items-center gap-2 neon-glow-primary active:scale-95 transition-all")
+          span.material-symbols-outlined add
+          span Add Artist
+
+      //- Stats Grid
+      div(class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10")
+        .bg-surface-container.p-6.rounded-2xl.border-l-4.border-primary
+          p.text-xs.font-medium.text-on-surface-variant.mb-1 Total Artists
+          p.text-3xl.font-headline.font-bold.text-white 1,284
+          div(class="mt-2 flex items-center gap-2 text-xs text-primary")
+            span.material-symbols-outlined.text-sm trending_up
+            span 12% from last month
+        
+        .bg-surface-container.p-6.rounded-2xl
+          p.text-xs.font-medium.text-on-surface-variant.mb-1 Active Streams
+          p.text-3xl.font-headline.font-bold.text-white 4.2M
+          div(class="mt-2 flex items-center gap-2 text-xs text-tertiary")
+            span.material-symbols-outlined.text-sm sensors
+            span Live Performance
+        
+        .bg-surface-container.p-6.rounded-2xl
+          p.text-xs.font-medium.text-on-surface-variant.mb-1 Global Reach
+          p.text-3xl.font-headline.font-bold.text-white 142
+          p(class="mt-2 text-xs text-on-surface-variant") Countries Reached
+        
+        .bg-surface-container.p-6.rounded-2xl
+          p.text-xs.font-medium.text-on-surface-variant.mb-1 Verified Status
+          p.text-3xl.font-headline.font-bold.text-white 98%
+          p(class="mt-2 text-xs text-on-surface-variant") Profile completion rate
+
+      //- Artist Table Container
+      div(class="bg-surface-container-low rounded-3xl overflow-hidden shadow-2xl")
+        div(class="overflow-x-auto")
+          table(class="w-full text-left border-collapse")
+            thead
+              tr(class="bg-surface-container/50 border-b border-outline-variant/10")
+                th(class="px-8 py-5 text-xs font-bold uppercase tracking-widest text-on-surface-variant") Artist Profile
+                th(class="px-6 py-5 text-xs font-bold uppercase tracking-widest text-on-surface-variant") Followers
+                th(class="px-6 py-5 text-xs font-bold uppercase tracking-widest text-on-surface-variant") Monthly Listeners
+                th(class="px-6 py-5 text-xs font-bold uppercase tracking-widest text-on-surface-variant") Latest Release
+                th(class="px-8 py-5 text-xs font-bold uppercase tracking-widest text-on-surface-variant text-right") Actions
+            
+            tbody(class="divide-y divide-outline-variant/10")
+              each artist in (artists || [])
+                tr(class="group transition-colors hover:bg-[#262626]/30")
+                  td.px-8.py-5
+                    div(class="flex items-center gap-4")
+                      if artist.avatar
+                        img(class="w-12 h-12 rounded-full object-cover", src=artist.avatar, alt=artist.name)
+                      else
+                        div(class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant text-sm font-bold")= (artist.name || '?').charAt(0).toUpperCase()
+                      div
+                        p(class="font-headline font-bold text-white")= artist.name
+                        p(class="text-xs text-on-surface-variant truncate max-w-[200px]")= artist.description || '—'
+                  td.px-6.py-5
+                    span(class="font-body font-semibold text-on-surface")= (artist.followers != null ? Number(artist.followers).toLocaleString('vi-VN') : '0')
+                  td.px-6.py-5
+                    span(class="font-body text-on-surface-variant") —
+                  td.px-6.py-5
+                    span(class="text-sm text-on-surface font-medium") —
+                  td(class="px-8 py-5 text-right")
+                    div(class="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity")
+                      button(type="button" class="p-2 rounded-lg transition-all hover:bg-primary/20 hover:text-primary", title="Xem")
+                        span.material-symbols-outlined.text-xl visibility
+                      button(type="button" class="p-2 rounded-lg transition-all hover:bg-primary/20 hover:text-primary", title="Sửa")
+                        span.material-symbols-outlined.text-xl edit
+                      button(type="button" class="p-2 rounded-lg transition-all hover:bg-error/20 hover:text-error", title="Xóa")
+                        span.material-symbols-outlined.text-xl delete
+              if !(artists || []).length
+                tr
+                  td(colspan="5" class="px-8 py-12 text-center text-on-surface-variant text-sm") Chưa có nghệ sĩ nào.
+
+        //- Pagination (currentPage, totalPages, total, limit từ controller)
+        - var pg = pagination || { currentPage: 1, totalPages: 1, total: 0, limit: 5 }
+        - var base = paginationBasePath || ''
+        - var fromIdx = pg.total === 0 ? 0 : (pg.currentPage - 1) * pg.limit + 1
+        - var toIdx = Math.min(pg.currentPage * pg.limit, pg.total)
+        div(class="px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-high/30 border-t border-outline-variant/10")
+          p(class="text-xs text-on-surface-variant")
+            | Hiển thị 
+            span(class="text-white font-bold")= fromIdx
+            | –
+            span(class="text-white font-bold")= toIdx
+            |  / 
+            span(class="text-white font-bold")= pg.total
+            |  nghệ sĩ
+          div(class="flex items-center gap-2")
+            if pg.currentPage > 1
+              a(href=`${base}?page=${pg.currentPage - 1}` class="px-4 py-2 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-bold hover:text-white transition-all") Trước
+            else
+              span(class="px-4 py-2 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-bold opacity-30 cursor-not-allowed") Trước
+            - var startPage = Math.max(1, Math.min(pg.currentPage - 2, Math.max(1, pg.totalPages - 4)))
+            - var endPage = Math.min(pg.totalPages, startPage + 4)
+            - var pn = startPage
+            while pn <= endPage
+              if pn === pg.currentPage
+                span(class="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-on-primary text-xs font-bold neon-glow-primary")= pn
+              else
+                a(href=`${base}?page=${pn}` class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-highest text-xs font-bold transition-all")= pn
+              - pn++
+            if pg.currentPage < pg.totalPages
+              a(href=`${base}?page=${pg.currentPage + 1}` class="px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold hover:bg-primary hover:text-on-primary transition-all") Sau
+            else
+              span(class="px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold opacity-30 cursor-not-allowed") Sau

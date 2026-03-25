@@ -1,0 +1,78 @@
+extends ../../layouts/default.pug
+
+block main
+  main(class="lg:ml-64 pt-24 pb-12 px-6 md:px-12 flex justify-center items-center min-h-screen")
+    .w-full.max-w-5xl
+      .glass-panel.p-8.md_p-12.rounded-xl.relative.overflow-hidden(class="shadow-[0_24px_48px_rgba(0,0,0,0.5)]")
+        .absolute.-top-24.-right-24.w-64.h-64.rounded-full.blur-3xl(class="bg-primary/5")
+        .absolute.-bottom-24.-left-24.w-64.h-64.rounded-full.blur-3xl(class="bg-tertiary/5")
+
+        .relative.z-10.mb-10
+          h1.font-headline.text-3xl.md_text-4xl.font-extrabold.tracking-tight.text-on-surface.mb-2 Tạo nghệ sĩ
+          p.text-on-surface-variant.text-lg Thêm nghệ sĩ mới — slug xem trước theo tên, ảnh bắt buộc.
+
+        form(
+          class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 relative z-10"
+          method="POST"
+          action="/admin/artist/create"
+          enctype="multipart/form-data"
+        )
+
+          .flex.flex-col.gap-8
+            .flex.flex-col.gap-4
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Ảnh đại diện
+                span.text-tertiary  *
+              div(class="group relative aspect-square md:h-64 bg-surface-container-highest rounded-xl border-2 border-dashed border-outline-variant hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden")
+                div#image-placeholder(class="text-center p-6 transition-transform group-hover:scale-105 duration-300 z-0")
+                  span.material-symbols-outlined.text-5xl.text-zinc-600.mb-3.block account_circle
+                  span.text-on-surface-variant.font-medium.block Chọn ảnh
+                  span(class="text-[10px] text-zinc-500 mt-2 block uppercase tracking-widest") JPG, PNG, WEBP
+
+                img#image-preview-img.hidden(class="absolute left-1/2 top-1/2 z-[1] max-h-full max-w-full -translate-x-1/2 -translate-y-1/2 object-contain object-center rounded-lg pointer-events-none select-none" alt="")
+                input#image-input(class="absolute inset-0 opacity-0 cursor-pointer z-10" type="file" name="image" accept="image/*")
+
+          .flex.flex-col.gap-6
+            .flex.flex-col.gap-2
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1
+                | Tên nghệ sĩ
+                span.text-tertiary  *
+              input#name(
+                type="text"
+                name="name"
+                placeholder="Nhập tên ca sĩ / nhóm nhạc"
+                required
+                class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all"
+              )
+
+            .flex.flex-col.gap-2
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Slug (xem trước)
+              input#slug-preview(
+                type="text"
+                readonly
+                tabindex="-1"
+                class="w-full bg-surface-container/80 border border-outline-variant/40 rounded-xl px-4 py-3.5 text-on-surface-variant cursor-default"
+                aria-label="Slug xem trước theo tên"
+              )
+
+            .flex.flex-col.gap-2
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Mô tả
+              textarea#description(
+                name="description"
+                placeholder="Giới thiệu ngắn (tuỳ chọn)..."
+                rows="5"
+                class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all resize-none"
+              )
+
+          div(class="md:col-span-2 mt-8 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row-reverse gap-4")
+            button(
+              type="submit"
+              class="sm:flex-1 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold py-4 px-8 rounded-xl active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(166,197,250,0.3)] hover:shadow-[0_0_30px_rgba(166,197,250,0.5)] flex items-center justify-center gap-2"
+            )
+              span.material-symbols-outlined person_add
+              | Tạo nghệ sĩ
+
+            button(
+              type="button"
+              onclick="window.location.href='/admin/artist'"
+              class="sm:flex-1 bg-surface-container-highest text-on-surface font-semibold py-4 px-8 rounded-xl active:scale-[0.98] transition-all hover:bg-surface-bright flex items-center justify-center gap-2"
+            ) Hủy

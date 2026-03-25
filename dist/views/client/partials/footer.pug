@@ -1,0 +1,35 @@
+//- Mobile-only bottom navigation (hidden on md and larger)
+nav(class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 backdrop-blur-2xl rounded-t-3xl border-t bg-slate-900/70 border-white/10 shadow-[0px_-20px_40px_rgba(0,0,0,0.4)]")
+  //- Trạng thái active do handle.footer.js gán theo URL (mặc định class inactive)
+  a.footer-mobile-nav(
+    data-footer-nav="home"
+    class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 transition-all duration-300 hover:bg-white/10 hover:text-teal-300 hover:ring-1 hover:ring-teal-400/30 scale-105 active:scale-95"
+    href="/"
+  )
+    span.material-symbols-outlined home
+    span.font-manrope.uppercase.tracking-widest.mt-1(class="text-[10px]") Home
+
+  a.footer-mobile-nav(
+    data-footer-nav="explore"
+    class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 transition-all duration-300 hover:bg-white/10 hover:text-teal-300 hover:ring-1 hover:ring-teal-400/30 scale-105 active:scale-95"
+    href="/explore"
+  )
+    span.material-symbols-outlined explore
+    span.font-manrope.uppercase.tracking-widest.mt-1(class="text-[10px]") Explore
+
+  a.footer-mobile-nav(
+    data-footer-nav="library"
+    class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 transition-all duration-300 hover:bg-white/10 hover:text-teal-300 hover:ring-1 hover:ring-teal-400/30 scale-105 active:scale-95"
+    href="/library"
+  )
+    span.material-symbols-outlined library_music
+    span.font-manrope.uppercase.tracking-widest.mt-1(class="text-[10px]") Library
+
+  a.footer-mobile-nav(
+    data-footer-nav="profile"
+    data-profile-auth=(isAuthenticated ? "user" : "guest")
+    class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 transition-all duration-300 hover:bg-white/10 hover:text-teal-300 hover:ring-1 hover:ring-teal-400/30 scale-105 active:scale-95"
+    href=(isAuthenticated ? "/user/profile" : "/auth/login")
+  )
+    span.material-symbols-outlined person
+    span.font-manrope.uppercase.tracking-widest.mt-1(class="text-[10px]") Profile

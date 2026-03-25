@@ -1,0 +1,281 @@
+extends ../../layouts/default.pug
+include ../../mixins/search-box.pug
+
+block main
+    //- Main Content Canvas
+    main.pb-32
+        //- 1. Hero Section
+        section.relative.min-h-screen.flex.flex-col.items-center.justify-center.px-6.pt-20.overflow-hidden
+            .absolute.inset-0.z-0.opacity-80
+                video#hero-video.w-full.h-full.object-cover.blur-sm.scale-110(
+                    src="https://res.cloudinary.com/dai4kn53o/video/upload/f_auto,q_auto/Justin_Bieber_-_2_Much_Live_from_Paris_-_Justin_Bieber_360p_h264_pbz0hl.mp4"
+                    poster="https://lh3.googleusercontent.com/aida-public/AB6AXuDu99z_fzlPKHddHTd3FNOuXCtMrdum_vzmYdgCt0OvgEUmtdYApTNASiw71EynqFbuosjyiuZKawzzazN3-4FL5Hq6VtYS2fCS-GVC8bjNaXx4Dge7GuHzEdoI9W0hWbe3fTn1ecohv0mzk7Eo9Eea0fqiMNqw5nlKMEGetP_YGaH3ISthKCfWwMHtt1VQ_uKZYtxWhZRAbmZ_2MfEbkayFL3qlP_ywfrnjsoZ8R0Nj5Z-Ti0Hvt2rHOIr1cGlEtoB0BVu-xn1Tco"
+                    muted
+                    playsinline
+                    loop
+                    class="opacity-80 transition-opacity duration-1000"
+                )
+                
+                .absolute.inset-0.bg-gradient-to-b.from-transparent.to-background
+
+            .relative.z-10.text-center.max-w-4xl.w-full
+                h1.font-headline.font-extrabold.text-5xl.mb-8.tracking-tight.text-glow.text-primary.leading-tight(class="md:text-7xl")
+                    | Chạm vào cảm xúc
+                    br
+                    | bằng từng giai điệu
+
+                .relative.max-w-2xl.mx-auto.mb-10.group
+                    +searchBox("home")
+
+                .flex.flex-wrap.justify-center.gap-6
+                    button.bg-gradient-to-br.from-primary.to-primary-container.text-on-primary.px-10.py-4.rounded-xl.font-bold.text-lg.transition-all.shadow-lg(class="hover:scale-105 active:scale-95 shadow-primary/20")
+                        | Nghe ngay
+                    button.glass.border.text-primary.px-10.py-4.rounded-xl.font-bold.text-lg.transition-all(class="border-white/10 hover:bg-white/10 active:scale-95")
+                        | Khám phá
+
+    //- --- MIXINS ---
+
+    mixin topicCard(imgSrc, title, slug, imgClass = "")
+        a.group.relative.h-48.rounded-2xl.overflow-hidden.cursor-pointer.shadow-xl(href=`/topics/detail/${slug}`)
+            img.w-full.h-full.object-cover.transition-transform.duration-700(
+                src=imgSrc 
+                alt=title 
+                class=`group-hover:scale-110 ${imgClass}`
+            )
+            .absolute.inset-0.transition-colors(class="bg-black/60 group-hover:bg-black/40")
+            .absolute.inset-0.flex.items-center.justify-center.p-6.text-center
+                .glass.px-6.py-3.rounded-xl.border(class="border-white/10")
+                    h3.font-headline.font-extrabold.text-2xl.text-white.drop-shadow-lg.uppercase.tracking-wider= title
+
+    mixin songCard(song)
+        .flex-none.w-40.group.cursor-pointer(
+            class="md:w-48"
+            button-play-track=song.audioUrl
+            data-audio-url=song.audioUrl
+            data-song-id=song._id
+            data-song-title=song.title
+            data-song-artist=(song.artistNames || 'Unknown Artist')
+            data-song-cover=(song.coverImage || "https://via.placeholder.com/300")
+        )
+            .relative.aspect-square.rounded-xl.overflow-hidden.mb-3
+                img.w-full.h-full.object-cover(src=(song.coverImage || "https://via.placeholder.com/300") alt=song.title)
+                .absolute.inset-0.bg-black.opacity-0.flex.items-center.justify-center.transition-opacity.duration-300(class="bg-black/40 group-hover:opacity-100")
+                    .w-12.h-12.bg-secondary.text-on-secondary.rounded-full.flex.items-center.justify-center.shadow-lg.transform.scale-90.transition-transform(class="group-hover:scale-100")
+                        span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;" class="!text-3xl") play_arrow
+            h4.font-bold.text-sm.truncate(class="md:text-base")= song.title
+            p.text-on-surface-variant.text-xs.mt-1= (song.artistNames || 'Unknown Artist')
+
+    mixin rankItem(rank, song)
+        div(
+            class="glass rounded-xl p-3 flex items-center gap-3 transition-colors cursor-pointer border-l-4 border-transparent hover:bg-surface-container-highest/60 hover:border-primary md:p-4 md:gap-6"
+            button-play-track=song.audioUrl
+            data-audio-url=song.audioUrl
+            data-song-id=song._id
+            data-song-title=song.title
+            data-song-artist=(song.artistNames || 'Unknown Artist')
+            data-song-cover=song.coverImage
+        )
+            span.font-black.text-xl.w-7.text-center.italic.flex-shrink-0(class="text-on-surface-variant/40 md:text-2xl md:w-8")= rank
+            img.w-12.h-12.rounded-lg.object-cover.flex-shrink-0(class="md:w-14 md:h-14" src=(song.coverImage || "https://via.placeholder.com/120") alt="Track art")
+            .flex-grow.min-w-0
+                h4.font-bold.truncate.text-sm(class="md:text-base")= song.title
+                p.text-xs.text-on-surface-variant.truncate(class="md:text-sm")= (song.artistNames || 'Unknown Artist')
+            div(class="flex items-center gap-2 flex-shrink-0 text-on-surface-variant md:gap-6")
+                span.text-xs.font-label.hidden(class="sm:block")= song.formattedDuration
+                span.material-symbols-outlined.text-xl favorite
+                span.material-symbols-outlined.text-xl more_vert
+
+    //- --- GIAO DIỆN CHÍNH ---
+
+    //- Section: Chủ đề âm nhạc
+    section.px-6.py-12(class="md:px-12")
+        .flex.justify-between.items-center.mb-8
+            h2.font-headline.font-bold.text-3xl Chủ đề âm nhạc
+           
+
+            //- Bộ nút điều hướng trượt
+            .flex.items-center.gap-2
+                button#topic-prev.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_left
+                button#topic-next.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_right
+
+        #topic-container(class="grid grid-flow-col auto-cols-[100%] sm:auto-cols-[48%] lg:auto-cols-[calc(33.333%-1rem)] gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar")
+            if topics && topics.length
+                each topic, index in topics
+                    if index < 2
+                        +topicCard(topic.thumbnail, topic.name, topic.slug, "object-top")
+                    else
+                        //- Topic 3 trở đi không truyền gì, nó sẽ tự căn giữa (mặc định của object-cover)
+                        +topicCard(topic.thumbnail, topic.name, topic.slug)
+                   
+           
+    //- Section: Mới & Thịnh hành
+    section.px-6.py-12(class="md:px-12")
+        .flex.justify-between.items-center.mb-8
+            h2.font-headline.font-bold.text-3xl Mới & Thịnh hành
+            .flex.gap-2
+                button#latest-prev.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest")
+                    span.material-symbols-outlined chevron_left
+                button#latest-next.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest")
+                    span.material-symbols-outlined chevron_right
+
+        #latest-container.flex.overflow-x-auto.gap-6.pb-4.no-scrollbar
+            if latestSongs && latestSongs.length
+                each song in latestSongs
+                    +songCard(song)
+            else
+                p.text-sm.text-on-surface-variant Chưa có bài hát mới.
+
+    //- 2. Mood Section
+    section.px-6.py-16(class="md:px-12")
+        .flex.justify-between.items-end.mb-10
+            div
+                span.font-label.text-xs.uppercase.text-secondary.mb-2.block(class="tracking-[0.2em]") Atmosphere
+                h2.font-headline.font-bold.text-3xl Moods & Vibes
+
+        .grid.grid-cols-2.gap-6(class="md:grid-cols-5")
+            mixin moodCard(imgSrc, emoji, label)
+                .group.relative.aspect-square.rounded-xl.overflow-hidden.cursor-pointer
+                    img.w-full.h-full.object-cover.transition-transform.duration-700(src=imgSrc alt=label class="group-hover:scale-110")
+                    .absolute.inset-0.bg-gradient-to-t(class="from-black/80 via-transparent to-transparent")
+                    .absolute.bottom-4.left-4.right-4.glass.py-2.px-4.rounded-xl.flex.items-center.gap-2
+                        span.text-xl= emoji
+                        span.font-medium.text-sm= label
+
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuC3ouI8kFm-lZUvg-ihRsnsDibVvLBSfWAlyHNAb0mDYA9ykG1FilIR1__PB2in120GnDLdp2aekjx3FdX-1tD1oRrx8xkgKGJKeKdZeDUtXLBn-jbX-C9On7ntozTJETuDGYYT9ZBhdBPm0Vj0G20_SqEdCLVs0cv4_ytLA5439fQgKuTQGhlHdlPKnOXn3hCTNawvQF3Pxqb7xjxYaYi9J5srPezAkCMfBj0TxnVfq2DGrSUVgJWF3kXgL9_YKU55pqCE1RctHJU", "😌", "Chill")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAMvROGBnKzpUgjy9tBsnSHRqmZ9U3EZ_X5sxRg2bkW7dxgRVMl3zGcTXOgQgsoANRqL2Zeb84Bt1orLup2BdaDLHGLeMsW97OMtpgaWKPw5pdPCyNq5AIgVt-N66SSHGLph9PDu5MHHr68eAq8K6nGJPraab6FIYBllZH5jeKIyjdMGaBTsENa0a-Q3Ga3-rDs9cLCWI9-FvQP_87jmjLTv8FmdD38-3ibj8Ol4VttIA1YGxf2m5qLZcudD9EQZ5HS9GxzpoZn2XE", "😢", "Buồn")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAv2AidEUgZkiKImXTn63V7DlttrIqPP6p6LsK-PKKIyomYBZ3e31p5tJwb3g1Sv_y6u--WB-xvd5u9B87VPo2vSMMf8I8atCiNSYMwxwaDMS5XJQuexkVyEwGOo6hGIaPYLiXpOEb2g7nPcjFHFguERq8_dE5_MqS8BS-RTrhZ2xUxtSyw4FB5RZHreXiUJbRz7mJ0bg0N9aCCr9RuYQa8o-UkyqBw-J17Y5R9rhecRNxb_Ta-8tWdTD0qTtxXqx74y3VeoikZSCA", "🌙", "Đêm khuya")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuBS-XFVkPq3hbzbvTCY09hJH61LizCxUKiA99lP6BH88wR8I7Wn0D_uqVA-H10ypOo2GypnWf0g_CrNwn7UDFr41KvxjrSynNEtN-FOmggbyFqZHqn9kljAz-7iTvgKrMIRwudoBYDV4suucGQWVsAUYPaz2pVBYkMTEQJNsndAdbDByUWn2um-SudlD6G9yAQIZn1conHZgOfFKEDwkAYWDps3HbbZI6V1zwyEhafq8TwAYwZOv_xFVPJlEECTP81uCBWcc_kflAU", "🔥", "Năng lượng")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAkoO-XubFCBYYyPd7dD-hYmmyjp6NqC86ui3HFOoPMrbnPgufq5V6_IRGnGefx80snzNjjfvJ5RYi6aXMEQAwoFRppbv0SrJNTCqQ1A6zX0k-ywrBWOl2yyTDxKTRlGhA87caTvX2iWoZnd-oKz8wu_ZGHcDT2Mm0GzwQ46ecpOzgvVVCwXX6G4V7H4E-q112LAjbI0plxHl05TpNwN4_XErZ-G9TYwQbTmpj318FFxHxz6ufK7Nin4gZSx8xHY7nRCvRt8JR1i3w", "💔", "Thất tình")
+
+    //- 3. For You Section — top bài nghe nhiều nhất (theo lịch sử, không trùng, tối đa 5)
+    section.px-6.py-12(class="md:px-12")
+        .flex.flex-col.gap-4.mb-8(class="md:flex-row md:items-center md:justify-between")
+            h2.font-headline.font-bold.text-3xl Dành cho bạn
+
+        .flex.overflow-x-auto.gap-8.pb-4.no-scrollbar
+            mixin forYouMusicCard(song)
+                .flex-none.w-48.group.cursor-pointer(
+                    class="md:w-56"
+                    button-play-track=song.audioUrl
+                    data-audio-url=song.audioUrl
+                    data-song-id=song._id
+                    data-song-title=song.title
+                    data-song-artist=(song.artistNames || 'Unknown Artist')
+                    data-song-cover=(song.coverImage || '/images/default-song.png')
+                )
+                    .relative.aspect-square.rounded-xl.overflow-hidden.mb-4.shadow-2xl
+                        img.w-full.h-full.object-cover.transition-transform.duration-500(src=(song.coverImage || '/images/default-song.png') alt=song.title class="group-hover:scale-105")
+                        div(class="absolute inset-0 bg-black/40 opacity-0 flex items-center justify-center transition-opacity group-hover:opacity-100")
+                            div(class="w-14 h-14 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-lg scale-90 transition-transform group-hover:scale-100 shadow-secondary/30 pointer-events-none")
+                                span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;" class="!text-4xl") play_arrow
+                    h3.font-bold.text-lg.leading-tight.truncate= song.title
+                    p.text-on-surface-variant.text-sm.mt-1= (song.artistNames || 'Unknown Artist')
+
+            if forYouTopSongs && forYouTopSongs.length
+                each song in forYouTopSongs
+                    +forYouMusicCard(song)
+            else
+                p.text-sm.text-on-surface-variant.px-1 Nghe nhạc khi đăng nhập để nhận gợi ý theo lịch sử của bạn.
+
+    //- 4. Featured Artists Section
+    section.px-6.py-12(class="md:px-12")
+        .flex.flex-col.gap-4.mb-8(class="md:flex-row md:items-center md:justify-between")
+            h2.font-headline.font-bold.text-3xl Nghệ sĩ tiêu biểu
+            
+        .flex.overflow-x-auto.gap-8.pb-4.no-scrollbar
+            mixin artistCard(imgSrc, name, slug)
+                a.flex-none.text-center.group.cursor-pointer.w-32(class="md:w-40" href=(slug ? `/artist/detail/${encodeURIComponent(slug)}` : '#'))
+                    div(class="relative aspect-square rounded-full overflow-hidden mb-4 border-2 border-transparent transition-all p-1 group-hover:border-secondary")
+                        img.w-full.h-full.object-cover.rounded-full(src=imgSrc alt="Artist")
+                    p.font-bold.text-sm.truncate(class="md:text-base")= name
+
+            if artists && artists.length
+                each artist in artists
+                    if artist.slug
+                        +artistCard(artist.avatar || 'https://via.placeholder.com/150', artist.name, artist.slug)
+
+    //- 5. Popular Albums Section
+    section.px-6.py-12(class="md:px-12")
+        .flex.justify-between.items-center.mb-8
+            h2.font-headline.font-bold.text-3xl Album nổi bật
+            button.text-primary.font-medium.transition-colors(class="hover:text-secondary") Khám phá kho nhạc
+
+        .flex.flex-wrap.gap-6
+            mixin albumCard(imgSrc, title, artist)
+                .group.cursor-pointer.flex-none.min-w-0(class="basis-[calc(50%-0.75rem)] md:basis-[calc(25%-1.125rem)] lg:basis-[calc(16.666%-1.25rem)]")
+                    .relative.aspect-square.rounded-2xl.overflow-hidden.mb-3.shadow-lg(class="group-hover:shadow-primary/10 transition-shadow")
+                        img.w-full.h-full.object-cover.transition-transform.duration-500(src=imgSrc alt="Album" class="group-hover:scale-110")
+                        .absolute.inset-0.transition-colors(class="bg-black/20 group-hover:bg-transparent")
+                    h4.font-bold.text-base.leading-tight.truncate= title
+                    p.text-on-surface-variant.text-xs.mt-1= artist
+
+            if albums && albums.length
+                each album in albums
+                    +albumCard(album.thumbnail || 'https://via.placeholder.com/300', album.title, album.artistName || 'Unknown')
+            else
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuCWvaNJp4ND082aWc0KN8vK7f0Rt28BkID8NjDA5z_GXVFwOZP0Wxp4D0tsOg2eCv8IQaWLtjYRHS688Ab3Wb_N701isx8hLU-LOzDSr9uxznQ5pMVTtWMegd90c1PLUDSUBOJoEkNKJKg2cYWYZhoEZZQbTaOtu7OSwRu9z97tADteTr8V--DVyPnnzB8ng5h3NZabCTGM_5amY1uJo44vBvYN4mljB4QJAnEFONhi5OANzKnLAhzXorL6x5oMAGDQRG4_7KTvUfo", "Bảo Tàng Của Nuối Tiếc", "Vũ.")
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuCUqt_DucqI6rrlEefB5BEsY-By-hZplGhL-LqRpeKKA9YMMVtHiujcwNaDOWgjUN4ZmLIzhZ8VQ4COtj9lQLzPairBVMYaTzJXNqMe_59j69cPcCX6n6rQSazEZrzmB6R-jWgIp52_S875N6RT7LYncjCItVX_AFO5xSuLoapSzjZS6VAe2RDTcmS6TvVDAv_Eg4h0r3QHgo7qh1r0Eb55f-Ya9R1xhFMszCkvd9RO5mDNQ9iLYTt_ScVJB2MNraPLnxPsQGrnASQ", "Sky Tour (Original)", "Sơn Tùng M-TP")
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuBfMZY9otLXRPp7ndAI2isJo9jEN7GfIEYZX2zuqWHo8cKAJZJ0YeZdwfJNMVWDCse_XldIsBWlujtNbOj_IZf8UxmQtziH71ArT6GzvHbpj4WwYQ37IGn49iIx5lypa0ORhaYEmBHPFBalxMM6MPZQWtUZgrDtHz_06_NA70GEZdx-_QJmRunrRXCGIKEpApteXIo3AIe1_uLrMOkxMMJYh_iJybAauzsNwF4BhkF6Rm-Vg3CXc7gKg5gl0wijczaUGRKeNm6qzWg", "Truyện Ngắn", "Hà Anh Tuấn")
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuBwfRXTnRD3Qh14gJPV013JTRU9WQYkGNj44mxkV4ncGAS8kCLspp56klfOIT50BPPnnyyLZ8o6OQtKc082GLUHnQfov9KYzS211MYqLUTSFTHk2G22UKgivjygKzHPEaTcojsYtkG4N-466cgoYTpOU7fiaXEK-fS-c7T3ZC6X5aLF19LWSJSuhqoBBCSZN6GP9WB1pZoErmNT68n11baEFJNzzhxqtctwELBdjpqCwkiUyA8EHZlZvG1ghZAyXQSMZX25gKmUC_w", "Hoàng", "Hoàng Thùy Linh")
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAZ3Gmuvc513A6VbfEfeat3jr2ZQAJCg7zvxRb2pT_vt8BiQ72TmJsI2kCrVvSrJw0V8Kg4g9COghBF1DK5kUh8aeoCzq4o3EX20eMLtrO4fnwL1Z6UBl_kWykwkzYmS5HVvZMLKAKyJvaMif1-UEqiEPtbARSMe7v16AZneAAMkKHHsisXtBAFXMA2UAAL_Pfcx81SiomZy8bfw_CM6bNf0VF_G2aZUNEDaGzwkU8ZL7RIy6wnpizVV4Vi86xjBWTh5txLiZmtvf8", "99%", "MCK")
+                +albumCard("https://lh3.googleusercontent.com/aida-public/AB6AXuDu99z_fzlPKHddHTd3FNOuXCtMrdum_vzmYdgCt0OvgEUmtdYApTNASiw71EynqFbuosjyiuZKawzzazN3-4FL5Hq6VtYS2fCS-GVC8bjNaXx4Dge7GuHzEdoI9W0hWbe3fTn1ecohv0mzk7Eo9Eea0fqiMNqw5nlKMEGetP_YGaH3ISthKCfWwMHtt1VQ_uKZYtxWhZRAbmZ_2MfEbkayFL3qlP_ywfrnjsoZ8R0Nj5Z-Ti0Hvt2rHOIr1cGlEtoB0BVu-xn1Tco", "The Playah", "Soobin")
+
+    section.px-4.py-12.grid.grid-cols-1.gap-8(class="md:px-12 lg:grid-cols-3")
+        div(class="lg:col-span-2")
+            .flex.justify-between.items-center.mb-6.px-2
+                h2.font-headline.font-bold.text-2xl(class="md:text-3xl") Bảng xếp hạng
+                span.material-symbols-outlined.text-on-surface-variant trending_up
+
+            .space-y-4
+                if rankSongs && rankSongs.length
+                    //- --- TOP 1 SONG ---
+                    .relative.group
+                        div(class="absolute -inset-0.5 bg-gradient-to-r from-secondary to-primary opacity-20 blur rounded-xl transition-opacity group-hover:opacity-40")
+                        div(
+                            class="relative glass rounded-xl p-3 flex items-center gap-3 transition-colors cursor-pointer hover:bg-surface-container-highest/60 md:p-4 md:gap-6"
+                            button-play-track=rankSongs[0].audioUrl
+                            data-audio-url=rankSongs[0].audioUrl
+                            data-song-id=rankSongs[0]._id
+                            data-song-title=rankSongs[0].title
+                            data-song-artist=(rankSongs[0].artistNames || 'Unknown Artist')
+                            data-song-cover=rankSongs[0].coverImage
+                        )
+                            span.font-black.text-2xl.text-secondary.w-7.text-center.italic.flex-shrink-0(class="md:text-3xl md:w-8") 1
+                            img.w-12.h-12.rounded-lg.object-cover.flex-shrink-0(class="md:w-14 md:h-14" src=(rankSongs[0].coverImage || "https://via.placeholder.com/120") alt="Track art")
+                            .flex-grow.min-w-0
+                                h4.font-bold.truncate.text-sm(class="md:text-base")= rankSongs[0].title
+                                p.text-xs.text-on-surface-variant.truncate(class="md:text-sm")= (rankSongs[0].artistNames || 'Unknown Artist')
+                            div(class="flex items-center gap-2 flex-shrink-0 text-on-surface-variant md:gap-6")
+                                span.text-xs.font-label.hidden(class="sm:block")= rankSongs[0].formattedDuration
+                                span.material-symbols-outlined.text-xl(class="hover:text-secondary md:text-2xl") favorite
+                                span.material-symbols-outlined.text-xl(class="hover:text-secondary md:text-2xl") more_vert
+
+                    each song, index in rankSongs
+                        if index > 0
+                            +rankItem(index + 1, song)
+                else
+                    p.text-sm.text-on-surface-variant Chưa có dữ liệu bảng xếp hạng.
+
+        div(class="flex flex-col gap-8")
+            div(class="glass-highest bg-primary/10 rounded-xl p-8 border border-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden flex-grow")
+                div(class="absolute top-4 left-6 text-primary/20 scale-150")
+                    span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;" class="!text-6xl") format_quote
+                p.font-headline.italic.text-2xl.text-primary.leading-relaxed.mb-6 "Có những ngày, chỉ cần một bài nhạc là đủ..."
+                div(class="h-px w-20 bg-primary/30 mx-auto")
+
+            div(class="surface-container-high rounded-xl p-6 border border-outline-variant/10")
+                h3.font-headline.font-bold.text-xl.mb-4 Hôm nay bạn cảm thấy thế nào?
+                .flex.flex-wrap.gap-2
+                    mixin moodBtn(label, active = false)
+                        if active
+                            button.px-4.py-2.rounded-full.bg-secondary.text-on-secondary.border.border-secondary.transition-all.text-sm= label
+                        else
+                            button.px-4.py-2.rounded-full.bg-surface-container-highest.border.transition-all.text-sm(class="border-outline-variant/20 hover:bg-secondary hover:text-on-secondary")= label
+
+                    +moodBtn("Hào hứng")
+                    +moodBtn("Suy tư")
+                    +moodBtn("Cô đơn")
+                    +moodBtn("Lãng mạn", true)
+                    +moodBtn("Trống rỗng")

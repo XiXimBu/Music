@@ -1,0 +1,310 @@
+extends ../../layouts/default.pug
+
+
+
+block main
+
+  main(class="lg:ml-64 pt-24 pb-12 px-6 md:px-12 flex justify-center items-center min-h-screen")
+
+    .w-full.max-w-5xl
+
+      .glass-panel.p-8.md_p-12.rounded-xl.relative.overflow-hidden(class="shadow-[0_24px_48px_rgba(0,0,0,0.5)]")
+
+        .absolute.-top-24.-right-24.w-64.h-64.rounded-full.blur-3xl(class="bg-primary/5")
+
+        .absolute.-bottom-24.-left-24.w-64.h-64.rounded-full.blur-3xl(class="bg-tertiary/5")
+
+
+
+        .relative.z-10.mb-10
+
+          h1.font-headline.text-3xl.md_text-4xl.font-extrabold.tracking-tight.text-on-surface.mb-2 Add New Song
+
+          p.text-on-surface-variant.text-lg Upload and manage a new track for the global library.
+
+
+
+        if error
+
+          div(class="relative z-10 mb-6 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-sm")= error
+
+
+
+        form(class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 relative z-10" method="POST" action="/admin/song/create" enctype="multipart/form-data")
+
+
+
+          .flex.flex-col.gap-8
+
+            .flex.flex-col.gap-4
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Thumbnail Upload
+
+              div(class="group relative aspect-video md:aspect-auto md:h-48 md:min-h-[12rem] bg-surface-container-highest rounded-xl border-2 border-dashed border-outline-variant hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden")
+
+                div#thumbnail-placeholder(class="text-center p-6 transition-transform group-hover:scale-105 duration-300 z-0")
+
+                  span.material-symbols-outlined.text-4xl.text-zinc-600.mb-3.block add_photo_alternate
+
+                  span.text-on-surface-variant.font-medium.block Choose Image
+
+                  span(class="text-[10px] text-zinc-500 mt-2 block uppercase tracking-widest") JPG, PNG, WEBP
+
+                //- object-contain + căn giữa: hiển thị trọn ảnh trong khung, không cắt mất chủ thể như object-cover
+                img#thumbnail-preview-img.hidden(class="absolute left-1/2 top-1/2 z-[1] max-h-full max-w-full -translate-x-1/2 -translate-y-1/2 object-contain object-center rounded-lg pointer-events-none select-none" alt="")
+
+                input#thumbnail-input(class="absolute inset-0 opacity-0 cursor-pointer z-10" type="file" name="thumbnail" accept="image/*")
+
+
+
+            .flex.flex-col.gap-4
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1
+
+                | Song File Upload
+
+                span.text-tertiary  *
+
+              div(class="group relative md:min-h-[12rem] bg-surface-container-low/40 rounded-xl border-2 border-dashed border-outline-variant cursor-pointer flex flex-col items-center justify-center overflow-hidden p-4")
+
+                div(class="text-center p-6 transition-transform group-hover:scale-105 duration-300")
+
+                  span(class="material-symbols-outlined text-5xl text-primary mb-4 block drop-shadow-[0_0_10px_rgba(166,197,250,0.4)]") music_note
+
+                  span.text-on-surface.font-bold.text-lg.block.mb-1 Upload Song File
+
+                  p(class="text-sm text-on-surface-variant max-w-[200px] mx-auto leading-relaxed") Chọn file audio để nghe thử bên dưới
+
+                input#audio-input(class="absolute inset-0 opacity-0 cursor-pointer z-10" type="file" name="audio" accept="audio/*" required)
+
+              #audio-preview-wrap(class="relative z-0 w-full px-2")
+
+
+
+          .flex.flex-col.gap-6
+
+            .flex.flex-col.gap-2
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1
+
+                | Title
+
+                span.text-tertiary  *
+
+              input#title(
+
+                type="text"
+
+                name="title"
+
+                placeholder="Enter song title"
+
+                required
+
+                value=(form && form.title) ? form.title : ''
+
+                class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all"
+
+              )
+
+
+
+            .flex.flex-col.gap-2
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1
+
+                | Artist (tuỳ chọn)
+
+              input#artist(
+
+                type="text"
+
+                name="artist"
+
+                placeholder="Để trống nếu chỉ gắn topic; hoặc nhập đúng tên có trong hệ thống"
+
+                value=(form && form.artist) ? form.artist : ''
+
+                class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all"
+
+              )
+
+
+
+            .flex.flex-col.gap-2
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Album (tuỳ chọn)
+
+              input#album(
+
+                type="text"
+
+                name="album"
+
+                placeholder="Tên album (để trống nếu không gán album)"
+
+                value=(form && form.album) ? form.album : ''
+
+                class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all"
+
+              )
+
+
+
+            .flex.flex-col.gap-2
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Topic (tuỳ chọn)
+
+              - var formTopics = form && form.topics ? (Array.isArray(form.topics) ? form.topics : [form.topics]).map(function (x) { return String(x); }) : []
+
+              div(class="rounded-xl border border-outline-variant/25 bg-surface-container-highest/80 max-h-44 overflow-y-auto overflow-x-hidden p-3 space-y-2 no-scrollbar")
+
+                if topics && topics.length
+
+                  each t in topics
+
+                    - var tid = String(t._id)
+
+                    - var isTopicChecked = formTopics.indexOf(tid) !== -1
+
+                    label(class="flex items-start gap-3 cursor-pointer group rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors")
+
+                      input(
+
+                        type="checkbox"
+
+                        name="topics"
+
+                        value=tid
+
+                        checked=isTopicChecked
+
+                        class="mt-0.5 h-4 w-4 shrink-0 rounded border-outline-variant text-primary focus:ring-primary/40"
+
+                      )
+
+                      span(class="text-sm text-on-surface leading-snug group-hover:text-primary transition-colors")= t.name
+
+                else
+
+                  p(class="text-xs text-zinc-500 text-center py-2") Chưa có topic nào. Có thể bỏ qua bước này.
+
+              p(class="text-[10px] text-zinc-500 px-1 mt-1") Có thể không chọn topic — giống album. Chọn nhiều topic nếu cần.
+
+
+
+            .flex.flex-col.gap-2
+
+              label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Slug (Auto-generated preview)
+
+              input#slug-preview(
+
+                type="text"
+
+                readonly
+
+                tabindex="-1"
+
+                class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3.5 text-primary font-mono text-sm cursor-not-allowed opacity-70"
+
+              )
+
+
+
+            .grid.grid-cols-2.gap-4
+
+              .flex.flex-col.gap-2
+
+                label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Duration *
+
+                input(
+
+                  type="text"
+
+                  name="duration"
+
+                  placeholder="mm:ss"
+
+                  value=(form && form.duration) ? form.duration : ''
+
+                  class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface placeholder:text-zinc-600 focus:ring-1 focus:ring-primary/50 transition-all"
+
+                )
+
+
+
+              .flex.flex-col.gap-2
+
+                label.font-label.text-sm.text-on-surface-variant.font-semibold.px-1 Initial Plays
+
+                input(
+
+                  type="number"
+
+                  name="plays"
+
+                  min="0"
+
+                  value=(form && form.plays != null) ? form.plays : 0
+
+                  class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface text-center"
+
+                )
+
+
+
+            .flex.items-center.justify-between.px-2.pt-4
+
+              .flex.flex-col.gap-1
+
+                label.font-label.text-sm.text-on-surface.font-semibold Track Status
+
+                span.text-xs.text-on-surface-variant Hiển thị trong thư viện
+
+              .flex.flex-col.items-end.gap-1
+
+                label.relative.inline-flex.items-center.cursor-pointer
+
+                  input#status-toggle.sr-only.peer(
+
+                    type="checkbox"
+
+                    checked=(form && form.status === 'inactive') ? false : true
+
+                  )
+
+                  div(class="w-14 h-7 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all")
+
+                input#status-field(type="hidden" name="status" value=(form && form.status) ? form.status : 'active')
+
+
+
+          div(class="md:col-span-2 mt-8 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row-reverse gap-4")
+
+            button(
+
+              type="submit"
+
+              class="sm:flex-1 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold py-4 px-8 rounded-xl active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(166,197,250,0.3)] hover:shadow-[0_0_30px_rgba(166,197,250,0.5)] flex items-center justify-center gap-2"
+
+            )
+
+              span.material-symbols-outlined save
+
+              | Create Song
+
+
+
+            button(
+
+              type="button"
+
+              onclick="window.location.href='/admin/song'"
+
+              class="sm:flex-1 bg-surface-container-highest text-on-surface font-semibold py-4 px-8 rounded-xl active:scale-[0.98] transition-all hover:bg-surface-bright flex items-center justify-center gap-2"
+
+            )
+
+              | Cancel
+
+

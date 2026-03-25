@@ -1,0 +1,39 @@
+mixin trackItem(song)
+  .group.flex.items-center.p-3.rounded-xl.transition-all(class="hover:bg-[#2d3449] relative")
+    //- 1. Index / Play Button
+    .w-10.flex.items-center.justify-center.relative
+      span.text-on-surface-variant.font-medium.text-sm(class="group-hover:opacity-0")= song.rankLabel
+      
+      button.absolute.inset-0.z-10.flex.items-center.justify-center.opacity-0.text-primary.pointer-events-auto(
+        class="group-hover:opacity-100 transition-opacity"
+        button-play-track=song.audioUrl
+        data-audio-url=song.audioUrl
+        data-song-id=song._id
+        data-song-title=song.title
+        data-song-artist=song.artistNames
+        data-song-cover=song.coverImage
+      )
+        svg.w-6.h-6(fill="currentColor" viewBox="0 0 24 24")
+          path(d="M8 5v14l11-7z")
+    
+    //- 2. Ảnh Cover
+    .relative.w-12.h-12.mx-4
+      img.w-full.h-full.rounded-lg.object-cover(src=song.coverImage || '/default-cover.jpg' alt=song.title)
+      if isAuthenticated
+        button.absolute.-top-2.-right-2.w-5.h-5.rounded-full.flex.items-center.justify-center.font-bold.bg-secondary.text-on-secondary.shadow(
+          type="button"
+          data-add-song-btn
+          data-song-id=song._id
+          class=(song.showAddSongBtn ? "text-[12px]" : "text-[12px] hidden")
+        ) +
+    
+    //- 3. Thông tin bài hát
+    .flex-1.min-w-0
+      h3.font-bold.text-on-surface.truncate= song.title
+      p.text-xs.text-on-surface-variant.truncate= song.artistNames
+    
+    //- 4. Lượt xem (Views)
+    span.hidden.text-sm.text-on-surface-variant.mx-4(class="md:block")= song.viewsDisplay
+    
+    //- 5. Thời lượng
+    span.text-sm.text-on-surface-variant.font-mono= song.formattedDuration

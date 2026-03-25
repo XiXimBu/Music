@@ -1,0 +1,47 @@
+include ../mixins/search-box.pug
+
+header(class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5")
+  //- 1. LOGO: Tối ưu vùng bấm và phản hồi cảm ứng cho Mobile
+  a(href="/" class="relative z-[60] block no-underline transition-transform active:scale-95 select-none")
+    div.text-2xl.font-black.text-indigo-400(class="dark:text-indigo-300 tracking-tighter font-headline")
+      | Music
+      span.text-teal-400 Xi
+
+  //- 2. BẢN DESKTOP (Navigation & User Actions)
+  div(class="hidden md:flex gap-8 items-center")
+    if showSearch
+      +searchBox("header")
+
+    //- Link điều hướng 
+    nav.flex.items-center.gap-6
+      a.text-teal-400.font-bold.text-sm(href="/") Home
+      a.text-slate-400.text-sm.transition-colors(href="/explore" class="hover:text-teal-400") Explore
+      a.text-slate-400.text-sm.transition-colors(href="/library" class="hover:text-teal-400") Library
+
+    //- Avatar & Icons Desktop
+    div.flex.items-center.gap-4.ml-4
+      button.text-slate-400(class="hover:text-teal-400 transition-transform active:scale-90")
+        span.material-symbols-outlined notifications
+      
+      a(class="w-10 h-10 rounded-full overflow-hidden border border-white/10 block hover:border-teal-400/50 transition-colors" href=(isAuthenticated ? "/user/profile" : "/auth/login"))
+        img.w-full.h-full.object-cover(
+          src=(userAvatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png")
+          alt="User Avatar"
+        )
+
+  //- 3. BẢN MOBILE (Actions)
+  div(class="flex md:hidden items-center gap-4")
+    //- Nút Search Mobile
+    button.text-slate-400.p-1(
+      type="button"
+      onclick="document.getElementById('mobile-search-wrapper').classList.toggle('hidden')"
+    )
+      span.material-symbols-outlined search
+    
+    //- Nút Menu Mobile 
+    button.text-teal-400.p-1(class="active:scale-90 transition-transform")
+      span.material-symbols-outlined(style="font-size: 32px") menu
+
+  //- 4. MOBILE SEARCH WRAPPER
+  #mobile-search-wrapper(class="hidden absolute top-full left-0 w-full p-4 bg-zinc-950/95 backdrop-blur-xl border-b border-white/10 md:hidden")
+    +searchBox("mobile")

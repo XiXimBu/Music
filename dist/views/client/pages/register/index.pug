@@ -1,0 +1,81 @@
+extends ../../layouts/authen.pug
+
+block main 
+  // Registration Card
+  div.w-full.max-w-xl.glass.rounded-xl.p-8.relative.z-10.secondary-glow(class="md:p-12")
+    div.text-center.mb-10
+      h1.font-headline.font-extrabold.text-4xl.mb-3.text-on-surface.tracking-tight Tạo Tài Khoản
+      p.text-on-surface-variant.text-sm.font-medium 
+    
+    form.space-y-6(action="/auth/register" method="POST")
+      // Username
+      div.relative.group
+        div.absolute.inset-y-0.left-0.pl-4.flex.items-center.pointer-events-none.text-outline(class="group-focus-within:text-secondary transition-colors")
+          span.material-symbols-outlined(style="font-size: 20px") person
+        input#username.w-full.bg-surface-container-low.text-on-surface.text-sm.rounded-xl.pl-12.pr-4.py-4.transition-all.input-focus-glow(
+          name="name"
+          type="text" 
+          placeholder="Username"
+          class="border-outline-variant/30 focus:ring-0 focus:border-secondary placeholder:text-outline"
+        )
+
+      // Email (Tương tự...)
+      div.relative.group
+        div.absolute.inset-y-0.left-0.pl-4.flex.items-center.pointer-events-none.text-outline(class="group-focus-within:text-secondary transition-colors")
+          span.material-symbols-outlined(style="font-size: 20px") mail
+        input#email.w-full.bg-surface-container-low.text-on-surface.text-sm.rounded-xl.pl-12.pr-4.py-4.transition-all.input-focus-glow(
+          name="email"
+          type="email" 
+          placeholder="Email Address"
+          class="border-outline-variant/30 focus:ring-0 focus:border-secondary placeholder:text-outline"
+        )
+
+      // Passwords Grid
+      div.grid.grid-cols-1.gap-4(class="md:grid-cols-2")
+        // Password Input...
+        div.relative.group
+          div.absolute.inset-y-0.left-0.pl-4.flex.items-center.pointer-events-none.text-outline(class="group-focus-within:text-secondary transition-colors")
+            span.material-symbols-outlined(style="font-size: 20px") lock
+          input#password.w-full.bg-surface-container-low.text-on-surface.text-sm.rounded-xl.pl-12.pr-4.py-4.transition-all.input-focus-glow(
+            name="password"
+            type="password"
+            placeholder="Password"
+            class="border-outline-variant/30 focus:ring-0 focus:border-secondary placeholder:text-outline"
+          )
+        // Confirm Password Input...
+        div.relative.group
+          div.absolute.inset-y-0.left-0.pl-4.flex.items-center.pointer-events-none.text-outline(class="group-focus-within:text-secondary transition-colors")
+            span.material-symbols-outlined(style="font-size: 20px") lock_reset
+          input#confirm_password.w-full.bg-surface-container-low.text-on-surface.text-sm.rounded-xl.pl-12.pr-4.py-4.transition-all.input-focus-glow(
+            name="confirmPassword"
+            type="password"
+            placeholder="Confirm"
+            class="border-outline-variant/30 focus:ring-0 focus:border-secondary placeholder:text-outline"
+          )
+
+      button.w-full.py-4.rounded-xl.transition-all.font-headline.text-lg(
+        type="submit"
+        class="bg-gradient-to-r from-secondary to-primary-container text-on-primary font-bold hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_25px_rgba(68,226,205,0.4)]"
+      ) Sign Up
+
+    // Social Logins
+    div.mt-10
+      div.relative.flex.items-center.mb-8
+        div.flex-grow.border-t(class="border-outline-variant/20")
+        span.flex-shrink.mx-4.text-xs.font-label.uppercase.tracking-widest.text-outline Or continue with
+        div.flex-grow.border-t(class="border-outline-variant/20")
+      
+      div.grid.grid-cols-2.gap-4
+        button.flex.items-center.justify-center.gap-3.border.py-3.rounded-xl.transition-colors.group(class="bg-surface-container-high/40 border-outline-variant/20 hover:bg-surface-container-highest")
+          img.w-5.h-5.opacity-80(src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIC6BAgkJLA6XxoXfUjSDtF7gGlc9Y2VeTxhzgBCdPZ8eCrqDuR35ol1yEeRff-LfUhzC3FqlhEkMoGtx_WucS3mxnmFpppA0QwBoRN0BpQimh0R54JsVMNzsUkIII8H8Ko0SKaZu6MsqSbU9_FFrZyxPqJYd8_5YJevf5kFFQZ3hTHGkk0sv6OmL3iF2BNu9d80zfFfJdvZwezP_oIgPedmD_MHsx_YZcKucHMiNdbVa2A4VJ7JUorPYjtMMJGOCVppHmO28tydI" alt="Google" class="group-hover:opacity-100")
+          span.text-sm.font-medium.text-on-surface-variant(class="group-hover:text-on-surface") Google
+        button.flex.items-center.justify-center.gap-3.border.py-3.rounded-xl.transition-colors.group(class="bg-surface-container-high/40 border-outline-variant/20 hover:bg-surface-container-highest")
+          span.material-symbols-outlined(style="color: #1877F2; font-size: 20px; font-variation-settings: 'FILL' 1;") social_leaderboard
+          span.text-sm.font-medium.text-on-surface-variant(class="group-hover:text-on-surface") Facebook
+
+    div.mt-10.text-center
+      p.text-on-surface-variant.text-sm Already have an account? 
+        a.text-secondary.font-bold.transition-all.ml-1.nav-hover-neon(
+          href="/auth/login"
+          class="pb-0.5 border-b border-transparent"
+        ) Log in

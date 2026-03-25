@@ -1,0 +1,126 @@
+doctype html
+html.dark(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(content="width=device-width, initial-scale=1.0" name="viewport")
+    title MUSIC XI - #{pageTitle}
+    script(src="https://unpkg.com/htmx.org@1.9.12")
+    script(src="https://cdn.tailwindcss.com?plugins=forms,container-queries")
+    link(href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet")
+    
+    script#tailwind-config.
+      tailwind.config = {
+          darkMode: "class",
+          theme: {
+              extend: {
+                  colors: {
+                      "on-tertiary": "#381385",
+                      "secondary-container": "#03c6b2",
+                      "surface-container-highest": "#2d3449",
+                      "on-secondary-fixed-variant": "#005047",
+                      "on-secondary": "#003731",
+                      "surface": "#0b1326",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "tertiary-container": "#9b7fed",
+                      "tertiary-fixed": "#e8ddff",
+                      "outline": "#908fa0",
+                      "on-error": "#690005",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#dae2fd",
+                      "inverse-primary": "#494bd6",
+                      "secondary-fixed-dim": "#3cddc7",
+                      "surface-container-low": "#131b2e",
+                      "on-surface-variant": "#c7c4d7",
+                      "secondary-fixed": "#62fae3",
+                      "on-primary-container": "#0d0096",
+                      "surface-variant": "#2d3449",
+                      "outline-variant": "#464554",
+                      "inverse-on-surface": "#283044",
+                      "on-surface": "#dae2fd",
+                      "surface-tint": "#c0c1ff",
+                      "on-tertiary-container": "#31057e",
+                      "on-primary-fixed": "#07006c",
+                      "primary": "#c0c1ff",
+                      "surface-bright": "#31394d",
+                      "secondary": "#44e2cd",
+                      "surface-container-lowest": "#060e20",
+                      "primary-fixed": "#e1e0ff",
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "on-primary": "#1000a9",
+                      "on-tertiary-fixed": "#21005e",
+                      "on-secondary-container": "#004d44",
+                      "tertiary": "#cebdff",
+                      "surface-dim": "#0b1326",
+                      "on-tertiary-fixed-variant": "#4f319c",
+                      "error": "#ffb4ab",
+                      "on-secondary-fixed": "#00201c",
+                      "background": "#0b1326",
+                      "surface-container-high": "#222a3d",
+                      "on-background": "#dae2fd",
+                      "tertiary-fixed-dim": "#cebdff",
+                      "surface-container": "#171f33",
+                      "on-error-container": "#ffdad6",
+                      "primary-container": "#8083ff"
+                  },
+                  fontFamily: {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+                  },
+                  borderRadius: {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+                  }
+              },
+          },
+      }
+    
+    style.
+      .glass {
+          background: rgba(45, 52, 73, 0.4);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(68, 226, 205, 0.15);
+      }
+      .hero-gradient {
+          background: radial-gradient(circle at 50% 50%, rgba(128, 131, 255, 0.1) 0%, rgba(11, 19, 38, 1) 100%);
+      }
+      .text-glow {
+          text-shadow: 0 0 20px rgba(192, 193, 255, 0.4);
+      }
+      .secondary-glow {
+          box-shadow: 0 0 20px rgba(68, 226, 205, 0.2);
+      }
+      .input-focus-glow:focus-within {
+          box-shadow: 0 0 15px rgba(68, 226, 205, 0.3);
+          border-color: #44e2cd;
+      }
+      .abstract-pattern {
+          background-image: radial-gradient(circle at 2px 2px, rgba(192, 193, 255, 0.05) 1px, transparent 0);
+          background-size: 40px 40px;
+      }
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .nav-hover-neon:hover {
+          border-bottom: 2px solid #44e2cd;
+          text-shadow: 0 0 8px rgba(68, 226, 205, 0.6);
+      }
+
+  body.bg-background.font-body.text-on-background.min-h-screen.flex.flex-col.overflow-x-hidden
+
+    
+    main(class="flex-grow flex items-center justify-center px-4 py-24 relative hero-gradient")
+      // Các hiệu ứng background chung cho toàn bộ hệ thống Authen
+      div.absolute.inset-0.abstract-pattern.opacity-40.pointer-events-none
+      div.absolute.w-96.h-96.bg-primary.pointer-events-none(class="top-1/4 left-1/4 opacity-[0.03] blur-[120px] rounded-full")
+      div.absolute.w-96.h-96.bg-secondary.pointer-events-none(class="bottom-1/4 right-1/4 opacity-[0.03] blur-[120px] rounded-full")
+
+      block main
+
+    //- Toast (flash từ session)
+    include ../../admin/partials/toast.pug
+    script(src="/admin/javascript/handle.toast.js")

@@ -1,0 +1,90 @@
+extends ../../layouts/default.pug
+include ../../mixins/search-box.pug
+include ../../mixins/track-item.pug
+
+block main 
+  main.max-w-7xl.mx-auto.px-6.pt-32
+ 
+    +searchBox("results", keyword)
+
+ 
+    div(class="grid grid-cols-1 lg:grid-cols-12 gap-12")
+      
+      //- CỘT TRÁI (lg:col-span-4)
+      div(class="space-y-12 lg:col-span-4")
+        
+        //- 1. Top Artist Section
+        section
+          h2(class="font-headline text-sm uppercase tracking-widest text-on-surface-variant mb-6 ml-1") Top Result
+          
+          div(class="relative group overflow-hidden rounded-xl p-8 text-center border bg-surface-container-low border-outline-variant/10")
+            div(class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent")
+            
+            if topArtist
+              .relative.z-10.flex.flex-col.items-center
+                .relative.mb-6
+                  div(class="absolute inset-0 bg-secondary/30 blur-3xl rounded-full scale-125 group-hover:scale-150 transition-transform duration-700")
+                  img(
+                    src=topArtist.avatar || "/images/default-cover.png"
+                    alt=topArtist.name
+                    class="relative w-48 h-48 rounded-full object-cover shadow-2xl border-4 border-surface-container-highest"
+                  )
+                
+                h3.font-headline.text-3xl.font-extrabold.text-on-surface.mb-2 #{topArtist.name}
+                p.text-on-surface-variant.mb-8.font-medium
+                  | Artist
+                  if topArtist.followers != null
+                    |  • #{topArtist.followers.toLocaleString()} followers
+                
+                .flex.gap-4.w-full
+                  if topArtist.slug
+                    a(
+                      href=`/artist/detail/${topArtist.slug}`
+                      class="flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg bg-gradient-to-br from-secondary to-secondary-container text-on-secondary hover:scale-105 active:scale-95 shadow-secondary/20 text-center"
+                    )
+                      span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;") person
+                      | View profile
+                  else
+                    button(
+                      type="button"
+                      class="flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg bg-gradient-to-br from-secondary to-secondary-container text-on-secondary opacity-60 cursor-not-allowed"
+                      disabled
+                    )
+                      span.material-symbols-outlined(style="font-variation-settings: 'FILL' 1;") person
+                      | View profile
+                  button(class="flex-1 border py-3 rounded-xl font-bold text-on-surface transition-colors border-outline-variant hover:bg-surface-container-highest active:scale-95") Follow
+            else
+              .relative.z-10.py-8.text-on-surface-variant
+                p.font-medium Không tìm thấy nghệ sĩ khớp với từ khóa này.
+
+        //- 2. Related Artists Section (Thêm vào đây)
+        div
+          h2(class="font-headline text-sm uppercase tracking-widest text-on-surface-variant mb-6 ml-1") Related Artists
+          div(class="grid grid-cols-2 gap-4")
+            //- Artist Card 1
+            div(class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 hover:bg-surface-container-high transition-all group cursor-pointer")
+              div(class="relative mb-4 overflow-hidden rounded-full aspect-square")
+                img(class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD35oZw6duYSvD5R57-_idGLuLS2tImXquKKFqmVEaxeICDQaslxttM_VzZ5-WstjSAq8q2d6qeaPQMuBcuPnMZvnWIaw9OWPgUQa5io5v9V5APhq6sFkyGCi3aTlZw00H7IAhEHQjJLumyvtJLritKdspdhEjV4bP0V3oERt8KuPEwMMRa632wiEFhH6y2NhXXaRI8WgOZgZq_Rv49_s4hvVn6H-NYPWLM3YTW3DrfWKm3ehLgdwAKTIMEb5o6P9SK8s7B1PLZTGI" alt="Lunar Drift")
+                div(class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity")
+                  span.material-symbols-outlined.text-secondary.text-4xl(style="font-variation-settings: 'FILL' 1;") play_circle
+              p(class="text-sm font-bold text-on-surface text-center truncate") Lunar Drift
+
+            //- Artist Card 2
+            div(class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 hover:bg-surface-container-high transition-all group cursor-pointer")
+              div(class="relative mb-4 overflow-hidden rounded-full aspect-square")
+                img(class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCfQzk9WB8xWKYg-7wFkM07tK8ONJ96MZcmLWwOOMcbXkq2C2AuL2pMUbTbAI8Gr7VzyfWjw2SUkODPDbQGmRZlB1ZNn_mbbyO8xZ316vSQI-eqlLxRjKHOZh7NQFCGzFRAp0tjAKbtseaO321We0fSh8SVtXL9wEP3ItyBDe1zJJbIUf71TIO3SNfwUzSLkhLexBtcx_ySUX7VjnERaFnDTrXP6cVB3q2AH8Ll8Gb8HUFewzfBDV883EW5zYeUYMmYLFUshPn9S4" alt="Static Souls")
+                div(class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity")
+                  span.material-symbols-outlined.text-secondary.text-4xl(style="font-variation-settings: 'FILL' 1;") play_circle
+              p(class="text-sm font-bold text-on-surface text-center truncate") Static Souls
+            
+         
+
+      //- CỘT PHẢI (lg:col-span-8)
+      div(class="lg:col-span-8")
+        .flex.items-center.justify-between.mb-6
+          h2(class="font-headline text-sm uppercase tracking-widest text-on-surface-variant ml-1") Popular Songs
+          span(class="text-xs font-bold text-primary cursor-pointer hover:underline uppercase tracking-tighter") View All
+
+        .space-y-2
+          each song in songs
+            +trackItem(song)

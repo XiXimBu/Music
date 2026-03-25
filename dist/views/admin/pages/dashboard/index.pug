@@ -1,0 +1,148 @@
+extends ../../layouts/default.pug
+
+block main
+  //- 1. THẺ MAIN: Đóng vai trò là vùng bao phủ toàn bộ bên phải Sidebar
+  //- Xóa bỏ các class gây lệch hoặc dính lề không cần thiết
+  main(class="flex-1 md:ml-64 min-h-screen transition-all duration-300 bg-background overflow-y-auto no-scrollbar")
+    
+    //- 2. CONTAINER CĂN GIỮ: Đây là chìa khóa để nội dung không bị sát phải
+    //- mx-auto: Căn giữa tự động (quan trọng nhất)
+    //- px-4 md:px-12: Tạo khoảng đệm hai bên để không bị dính sát mép khi thu nhỏ trình duyệt
+    //- py-8: Khoảng cách trên dưới cho thoáng
+    div(class="max-w-[1400px] mx-auto w-full px-4 md:px-10 py-8 flex flex-col gap-10")
+
+      //- 3. HERO SECTION
+      section(class="grid grid-cols-1 lg:grid-cols-12 gap-6")
+        //- Banner chính (8 cột)
+        div(class="lg:col-span-8 relative h-64 md:h-80 rounded-2xl overflow-hidden group shadow-2xl shadow-black/20")
+          img(src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2AcSHK8zRdDQ1uVZaufq9lFyR3vgMYF_MdSq-V13Npdo8hr1xoii6ZrdxD1DDKHqfmHZEwhJuRAvhAJZH0BhL-q1yitiYEu7ZudEWZX9uaIyx-ZFeKnaWwVo39AAsJn5bAi9CLQsJETIJJ5eMbDwf-u58KNrUKe7mm9vlazTiAuQNWShnTjtqnI9YBAzdbtpxj8NyJUyTHnbHbtm5avJDE7n8TelL42ceTF_ilOmJxlpFkpT8BaI2Vre-WFwS1IOeiMcq6uO1u1k", class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105")
+          div(class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent")
+          div(class="absolute bottom-0 left-0 p-6 md:p-8 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4")
+            div
+              span(class="inline-block px-3 py-1 bg-tertiary text-on-tertiary text-[10px] font-bold uppercase tracking-widest rounded-full mb-3") Trending Album
+              h1(class="text-2xl md:text-4xl font-headline font-extrabold text-white leading-none") Midnight Echoes
+              p(class="text-on-surface-variant text-xs md:text-sm max-w-md mt-3 line-clamp-2 opacity-80") The latest synth-wave masterpiece by Hyperion reaching over 2M streams.
+            div(class="flex gap-2")
+              button(class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 flex items-center justify-center border border-white/10 transition-all")
+                span(class="material-symbols-outlined text-white") chevron_left
+              button(class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 flex items-center justify-center border border-white/10 transition-all")
+                span(class="material-symbols-outlined text-white") chevron_right
+
+        //- Spotlight (4 cột)
+        div(class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6")
+          div(class="bg-surface-container rounded-2xl p-6 relative overflow-hidden group flex flex-col justify-end min-h-[140px] border border-white/5")
+            span(class="absolute top-4 right-4 material-symbols-outlined text-primary text-4xl opacity-20") mic_external_on
+            p(class="text-[10px] font-bold text-primary uppercase tracking-widest") Artist Spotlight
+            h3(class="text-xl font-bold text-white mt-1") LUNA RIOT
+          div(class="bg-surface-container rounded-2xl p-6 relative overflow-hidden group flex flex-col justify-end min-h-[140px] border border-white/5")
+            span(class="absolute top-4 right-4 material-symbols-outlined text-tertiary text-4xl opacity-20") podcasts
+            p(class="text-[10px] font-bold text-tertiary uppercase tracking-widest") Live Now
+            h3(class="text-xl font-bold text-white mt-1") Nocturnal FM
+
+      //- 4. STATS ROW
+      section(class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6")
+        mixin statCard(icon, label, value, trend, color, trendColor)
+          div(class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:border-primary/30 transition-all duration-300 shadow-sm")
+            div(class="flex justify-between items-start mb-4")
+              div(class=`p-2 bg-${color}/10 text-${color} rounded-xl`)
+                span(class="material-symbols-outlined")= icon
+              span(class=`text-[10px] font-bold text-${trendColor}-400 bg-${trendColor}-400/10 px-2 py-0.5 rounded`)= trend
+            p(class="text-zinc-500 text-xs uppercase tracking-widest font-medium")= label
+            p(class="text-3xl font-bold text-white mt-2")= value
+
+        +statCard('library_music', 'Total Songs', '42,891', '+12%', 'primary', 'emerald')
+        +statCard('person', 'Active Users', '1.2M', '+8.4%', 'blue-500', 'emerald')
+        +statCard('play_circle', 'Daily Plays', '856K', 'Stable', 'purple-500', 'zinc')
+        +statCard('payments', 'Revenue', '$14.2K', '+22%', 'tertiary', 'emerald')
+
+      //- 5. TABLE SECTION
+      section(class="bg-surface-container rounded-2xl border border-white/5 overflow-hidden shadow-xl shadow-black/20")
+        div(class="p-6 flex flex-col sm:flex-row justify-between items-center gap-4")
+          h2(class="text-xl font-bold text-white") Recent Albums
+          div(class="flex items-center gap-3")
+            div(class="flex bg-surface-container-highest rounded-xl p-1")
+              button(class="px-4 py-1.5 text-xs font-bold bg-zinc-700 text-white rounded-lg shadow-sm") All
+              button(class="px-4 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors") Popular
+            button(class="p-2 bg-surface-container-highest rounded-xl text-zinc-400 hover:text-white border border-white/5")
+              span(class="material-symbols-outlined text-sm") filter_list
+
+        div(class="w-full overflow-x-auto")
+          table(class="w-full text-left border-collapse min-w-[800px]")
+            thead(class="bg-surface-container-low border-y border-white/5 text-[10px] text-zinc-500 uppercase tracking-widest")
+              tr
+                th(class="px-8 py-4") Album Title
+                th(class="px-8 py-4") Artist
+                th(class="px-8 py-4") Plays
+                th(class="px-8 py-4") Status
+                th(class="px-8 py-4") Actions
+            tbody(class="divide-y divide-white/5")
+              each album in (albums || [])
+                - var artistName = album.artist && typeof album.artist === 'object' && album.artist.name ? album.artist.name : '—'
+                - var statusRaw = (album.status || 'active').toString().toLowerCase()
+                - var isActive = statusRaw === 'active'
+                tr(class="hover:bg-white/[0.03] transition-colors group cursor-pointer")
+                  td(class="px-8 py-4")
+                    div(class="flex items-center gap-4")
+                      div(class="w-12 h-12 rounded-lg bg-zinc-800 overflow-hidden flex-shrink-0 shadow-lg")
+                        img(src=album.thumbnail alt="" class="w-full h-full object-cover")
+                      div
+                        p(class="text-sm font-bold text-white group-hover:text-primary transition-colors")= album.title
+                        p(class="text-[10px] text-zinc-500 mt-0.5") 03:42 • 48kHz
+                  td(class="px-8 py-4 text-sm text-zinc-300 font-medium")= artistName
+                  td(class="px-8 py-4 text-sm text-zinc-300") 1.2M
+                  td(class="px-8 py-4")
+                    button(
+                      type="button"
+                      button-change-status
+                      data-id=album._id
+                      data-status=statusRaw
+                      class="flex items-center gap-2 rounded-lg px-1 py-1 -ml-1 text-left hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    )
+                      if isActive
+                        span(class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0")
+                        span(class="text-xs font-bold text-emerald-500 capitalize")= statusRaw
+                      else
+                        span(class="w-2 h-2 rounded-full bg-zinc-500 shrink-0")
+                        span(class="text-xs font-bold text-zinc-400 capitalize")= statusRaw
+                  td(class="px-8 py-4")
+                    div(class="flex items-center gap-3")
+                      button(class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-all")
+                        span(class="material-symbols-outlined text-sm") edit
+                      button(class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-red-500 transition-all")
+                        span(class="material-symbols-outlined text-sm") delete
+
+        //- Pagination
+        - var pg = pagination || { total: 0, page: 1, limit: 2, totalPages: 1 }
+        - var base = paginationBasePath || ''
+        - var fromIdx = pg.total === 0 ? 0 : (pg.page - 1) * pg.limit + 1
+        - var toIdx = Math.min(pg.page * pg.limit, pg.total)
+        div(class="p-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-low/30")
+          p(class="text-xs text-zinc-500 order-2 md:order-1 font-medium") Hiển thị 
+            span(class="text-white")= fromIdx
+            | –
+            span(class="text-white")= toIdx
+            |  / 
+            span(class="text-white")= pg.total
+            |  album
+          div(class="flex items-center gap-2 order-1 md:order-2")
+            if pg.page > 1
+              a(href=`${base}?page=${pg.page - 1}` class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-highest text-zinc-400 hover:text-white border border-white/5 transition-all")
+                span(class="material-symbols-outlined text-sm") chevron_left
+            else
+              span(class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-highest/50 text-zinc-600 border border-white/5 cursor-not-allowed")
+                span(class="material-symbols-outlined text-sm") chevron_left
+            - var startPage = Math.max(1, Math.min(pg.page - 2, Math.max(1, pg.totalPages - 4)))
+            - var endPage = Math.min(pg.totalPages, startPage + 4)
+            - var pn = startPage
+            while pn <= endPage
+              if pn === pg.page
+                span(class="w-9 h-9 rounded-lg bg-primary text-on-primary font-black text-xs shadow-lg shadow-primary/20 flex items-center justify-center")= pn
+              else
+                a(href=`${base}?page=${pn}` class="w-9 h-9 rounded-lg hover:bg-surface-container-highest text-zinc-400 hover:text-white text-xs transition-all flex items-center justify-center")= pn
+              - pn++
+            if pg.page < pg.totalPages
+              a(href=`${base}?page=${pg.page + 1}` class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-highest text-zinc-400 hover:text-white border border-white/5 transition-all")
+                span(class="material-symbols-outlined text-sm") chevron_right
+            else
+              span(class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-highest/50 text-zinc-600 border border-white/5 cursor-not-allowed")
+                span(class="material-symbols-outlined text-sm") chevron_right

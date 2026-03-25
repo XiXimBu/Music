@@ -1,0 +1,33 @@
+extends ../../layouts/authen.pug
+
+block main
+  // Forgot Password Card
+  div.w-full.max-w-xl.glass.rounded-xl.p-8.relative.z-10.secondary-glow(class="md:p-12")
+    div.text-center.mb-10
+      h1.font-headline.font-extrabold.text-4xl.mb-3.text-on-surface.tracking-tight Quên Mật Khẩu
+      p.text-on-surface-variant.text-sm.font-medium
+        | Nhập email tài khoản để nhận mã OTP xác thực.
+
+    form.space-y-6(action="/auth/forgot-password" method="POST")
+      // Email
+      div.relative.group
+        div.absolute.inset-y-0.left-0.pl-4.flex.items-center.pointer-events-none.text-outline(class="group-focus-within:text-secondary transition-colors")
+          span.material-symbols-outlined(style="font-size: 20px") mail
+        input#email.w-full.bg-surface-container-low.text-on-surface.text-sm.rounded-xl.pl-12.pr-4.py-4.transition-all.input-focus-glow(
+          name="email"
+          type="email"
+          placeholder="Email Address"
+          class="border-outline-variant/30 focus:ring-0 focus:border-secondary placeholder:text-outline"
+        )
+
+      button.w-full.py-4.rounded-xl.transition-all.font-headline.text-lg(
+        type="submit"
+        class="bg-gradient-to-r from-secondary to-primary-container text-on-primary font-bold hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_25px_rgba(68,226,205,0.4)]"
+      ) Gửi OTP
+
+    div.mt-10.text-center
+      p.text-on-surface-variant.text-sm Đã nhớ mật khẩu?
+        a.text-secondary.font-bold.transition-all.ml-1.nav-hover-neon(
+          href="/auth/login"
+          class="pb-0.5 border-b border-transparent"
+        ) Đăng nhập

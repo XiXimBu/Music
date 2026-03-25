@@ -1,0 +1,187 @@
+extends ../../layouts/default.pug
+
+block main
+  main(class="md:ml-64 pt-24 pb-12 px-6")
+    //- Hero Slider / Featured
+    section(class="mb-10")
+      div(class="relative h-[340px] w-full rounded-xl overflow-hidden group")
+        img(
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7V8QlYMcxt-ckPtQDxik9UtMv0MGa-MVROgtuiup9PVkGVsrgoBEKuo-hzrSl5_MAn8rP2AXhfny6KyNgJIfo6b_n4aQievdYTBp31NKLiYcVSa_YxHBgYTcbCGiuhVPnbBE1zf-ZZSEhM-Z3Vso7G-M6FBduQN41QVEfrBVLMxxcuiJfQPZLR9rM0pTx0c3tX7Y8SZrnmFmJBIRywo_b36aN6aUXaOtMXOO18PIwaw1Hs17G3rEALKwZ4CiGOJGqq6MTbyMdrEk"
+          alt="Trending" 
+          data-alt="Abstract vibrant blue and purple neon music visualization"
+          class="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700"
+        )
+        
+        div(class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent")
+        
+        div(class="relative h-full flex flex-col justify-center px-12 space-y-4")
+          span(class="flex items-center gap-2 text-tertiary font-bold tracking-widest text-xs uppercase")
+            span(class="w-2 h-2 rounded-full bg-tertiary animate-pulse shadow-[0_0_8px_#ff6e80]")
+            | Trending Now
+            
+          h1(class="text-5xl font-extrabold font-headline leading-tight max-w-xl")
+            | Midnight 
+            span(class="text-primary italic") Circuit
+            
+          p(class="text-on-surface-variant max-w-md text-lg")
+            | Manage the latest electronic masterpiece by Neon Shadow. 1.2M streams in 24 hours.
+            
+          div(class="flex gap-4 pt-4")
+            button(class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:shadow-[0_0_20px_rgba(166,197,250,0.4)] transition-all")
+              span(class="material-symbols-outlined" data-icon="edit") edit
+              | Edit Song
+              
+            button(class="glass-card border border-white/10 px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-white/10 transition-all")
+              span(class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;") play_arrow
+              | Preview
+    
+    //- Statistics Section
+    section(class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10")
+      //- Total Songs
+      div(class="glass-card rounded-lg p-6 flex flex-col space-y-2 border border-white/5 group hover:border-primary/20 transition-all")
+        div(class="flex justify-between items-start")
+          span(class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-xl") library_music
+          span(class="text-[10px] text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/20") +12%
+        div
+          p(class="text-on-surface-variant text-xs font-medium uppercase tracking-wider") Total Songs
+          h3(class="text-3xl font-bold font-headline mt-1") 12,842
+
+      //- Active Songs
+      div(class="glass-card rounded-lg p-6 flex flex-col space-y-2 border border-white/5 group hover:border-tertiary/20 transition-all")
+        div(class="flex justify-between items-start")
+          span(class="material-symbols-outlined text-tertiary bg-tertiary/10 p-2 rounded-xl" style="font-variation-settings: 'FILL' 1;") sensors
+          span(class="text-[10px] text-tertiary bg-tertiary/5 px-2 py-1 rounded-full border border-tertiary/20") Active
+        div
+          p(class="text-on-surface-variant text-xs font-medium uppercase tracking-wider") Active Songs
+          h3(class="text-3xl font-bold font-headline mt-1") 11,209
+
+      //- Deleted Songs
+      div(class="glass-card rounded-lg p-6 flex flex-col space-y-2 border border-white/5 group hover:border-white/20 transition-all")
+        div(class="flex justify-between items-start")
+          span(class="material-symbols-outlined text-gray-400 bg-white/5 p-2 rounded-xl") delete_sweep
+        div
+          p(class="text-on-surface-variant text-xs font-medium uppercase tracking-wider") Deleted Songs
+          h3(class="text-3xl font-bold font-headline mt-1") 432
+
+      //- Trending Songs
+      div(class="glass-card rounded-lg p-6 flex flex-col space-y-2 border border-white/5 group hover:border-primary/20 transition-all")
+        div(class="flex justify-between items-start")
+          span(class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-xl") trending_up
+          span(class="text-[10px] text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/20") Top 1%
+        div
+          p(class="text-on-surface-variant text-xs font-medium uppercase tracking-wider") Trending Songs
+          h3(class="text-3xl font-bold font-headline mt-1") 84
+
+    //- Songs Management Table
+    section(class="glass-card rounded-lg overflow-hidden border border-white/5")
+      if error
+        div(class="px-6 py-3 text-sm text-red-400 border-b border-white/5 bg-red-500/10")= error
+      div(class="overflow-x-auto")
+        table(class="w-full text-left border-collapse min-w-[900px]")
+          thead(class="bg-white/5 text-[11px] uppercase tracking-widest text-on-surface-variant font-bold")
+            tr
+              th(class="px-6 py-4") Thumbnail
+              th(class="px-6 py-4") Title
+              th(class="px-6 py-4") Artist
+              th(class="px-6 py-4 text-center") Duration
+              th(class="px-6 py-4 text-center") Status
+              th(class="px-6 py-4 text-center") Plays
+              th(class="px-6 py-4") Created At
+              th(class="px-6 py-4 text-right") Actions
+          tbody(class="divide-y divide-white/5 text-sm")
+            each song in (songs || [])
+              - var secs = Math.max(0, Math.floor(Number(song.duration) || 0))
+              - var mm = Math.floor(secs / 60)
+              - var ss = secs % 60
+              - var durStr = (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss
+              - var statusRaw = (song.status || 'active').toString().toLowerCase()
+              - var isActive = statusRaw === 'active'
+              - var names = []
+              each a in (song.artists || [])
+                if a && typeof a === 'object' && a.name
+                  - names.push(a.name)
+              - var artistLabel = names.length ? names.join(', ') : '—'
+              - var created = song.createdAt ? new Date(song.createdAt) : null
+              - var createdStr = created && !isNaN(created.getTime()) ? created.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+              - var viewsNum = typeof song.views === 'number' ? song.views : 0
+              tr(class="hover:bg-white/[0.03] transition-colors group")
+                td(class="px-6 py-4")
+                  div(class="w-12 h-12 rounded-lg overflow-hidden relative group-hover:shadow-[0_0_15px_rgba(166,197,250,0.3)] transition-all bg-zinc-800 flex items-center justify-center")
+                    if song.coverImage
+                      img(src=song.coverImage alt="" class="w-full h-full object-cover absolute inset-0")
+                      div(class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10")
+                        span(class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'FILL' 1;") play_circle
+                    else
+                      span(class="material-symbols-outlined text-zinc-500 text-2xl") music_note
+                td(class="px-6 py-4")
+                  p(class="font-bold text-on-surface")= song.title
+                  p(class="text-xs text-on-surface-variant truncate max-w-[200px]")= song.slug
+                td(class="px-6 py-4 font-medium text-primary")= artistLabel
+                td(class="px-6 py-4 text-center text-on-surface-variant")= durStr
+                td(class="px-6 py-4 text-center")
+                  button(
+                    type="button"
+                    button-change-status
+                    data-id=song._id
+                    data-status=statusRaw
+                    data-status-endpoint="/admin/song"
+                    data-ui="toggle"
+                    title="Đổi trạng thái"
+                    class="inline-flex items-center justify-center rounded-lg p-1 hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  )
+                    if isActive
+                      div(class="w-10 h-5 bg-primary/20 rounded-full relative p-1")
+                        div(class="w-3 h-3 bg-primary rounded-full shadow-[0_0_8px_#a6c5fa] ml-auto")
+                    else
+                      div(class="w-10 h-5 bg-zinc-600/40 rounded-full relative p-1")
+                        div(class="w-3 h-3 bg-zinc-400 rounded-full mr-auto")
+                td(class="px-6 py-4 text-center font-bold")= viewsNum.toLocaleString('vi-VN')
+                td(class="px-6 py-4 text-on-surface-variant")= createdStr
+                td(class="px-6 py-4")
+                  div(class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity")
+                    button(type="button" class="p-2 hover:text-primary transition-colors" title="Chỉnh sửa")
+                      span(class="material-symbols-outlined text-lg") edit
+                    button(type="button" class="p-2 hover:text-tertiary transition-colors" title="Xóa")
+                      span(class="material-symbols-outlined text-lg") delete
+                    a(href=song.audioUrl target="_blank" rel="noopener noreferrer" class="p-2 hover:text-on-surface transition-colors inline-flex" title="Nghe thử")
+                      span(class="material-symbols-outlined text-lg") visibility
+            if !(songs || []).length
+              tr
+                td(colspan="8" class="px-6 py-12 text-center text-on-surface-variant text-sm") Chưa có bài hát nào.
+
+      //- Pagination
+      - var pg = pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+      - var base = paginationBasePath || ''
+      - var fromIdx = pg.total === 0 ? 0 : (pg.page - 1) * pg.limit + 1
+      - var toIdx = Math.min(pg.page * pg.limit, pg.total)
+      div(class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-white/[0.02] border-t border-white/5")
+        p(class="text-xs text-on-surface-variant order-2 sm:order-1")
+          | Hiển thị 
+          span(class="text-on-surface font-medium")= fromIdx
+          | –
+          span(class="text-on-surface font-medium")= toIdx
+          |  / 
+          span(class="text-on-surface font-medium")= pg.total
+          |  bài hát
+        div(class="flex items-center gap-2 order-1 sm:order-2")
+          if pg.page > 1
+            a(href=`${base}?page=${pg.page - 1}` class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-on-surface-variant")
+              span(class="material-symbols-outlined text-sm") chevron_left
+          else
+            span(class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant/40 cursor-not-allowed")
+              span(class="material-symbols-outlined text-sm") chevron_left
+          - var startPage = Math.max(1, Math.min(pg.page - 2, Math.max(1, pg.totalPages - 4)))
+          - var endPage = Math.min(pg.totalPages, startPage + 4)
+          - var pn = startPage
+          while pn <= endPage
+            if pn === pg.page
+              span(class="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold text-xs shadow-[0_0_10px_rgba(166,197,250,0.3)]")= pn
+            else
+              a(href=`${base}?page=${pn}` class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-on-surface-variant text-xs")= pn
+            - pn++
+          if pg.page < pg.totalPages
+            a(href=`${base}?page=${pg.page + 1}` class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-on-surface-variant")
+              span(class="material-symbols-outlined text-sm") chevron_right
+          else
+            span(class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant/40 cursor-not-allowed")
+              span(class="material-symbols-outlined text-sm") chevron_right
