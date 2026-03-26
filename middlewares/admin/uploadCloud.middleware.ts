@@ -84,7 +84,9 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
         try {
             await fs.promises.mkdir(tempDir, { recursive: true });
 
-            await ytdlExec(url, {
+            const ytdlpFlags: any = {
+                // Thử chuỗi format linh hoạt để “hốt” bất cứ thứ gì có tiếng về trước
+                format: "ba/b",
                 noPlaylist: true,
                 extractAudio: true,
                 audioFormat: "mp3",
@@ -94,6 +96,11 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                 output: outTemplate,
                 // Cookies để vượt chặn datacenter IP (Render)
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                // Xóa cache cũ để tránh lưu lại lỗi format trước đó
+                rmCacheDir: true,
+                // Giả lập thiết bị mweb/tv và bỏ DASH/HLS để né chặn datacenter IP
+                // (yt-dlp flag: --extractor-args "youtube:player_client=mweb,tv;skip=dash,hls")
+                extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
                 // “Nịnh” YouTube để cookies hoạt động ổn định hơn
                 addHeader: [
                     "referer:https://www.google.com/",
@@ -102,7 +109,9 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                 // Ít spam log
                 quiet: true,
                 noWarnings: true,
-            });
+            };
+
+            await ytdlExec(url, ytdlpFlags);
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
             const waitForReadable = async (p: string, attempts = 15) => {
