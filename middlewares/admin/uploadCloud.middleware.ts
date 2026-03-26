@@ -65,11 +65,13 @@ function streamUploadBuffer(buffer: Buffer, cloudinaryAccount: CloudinaryV2): Pr
  */
 function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: CloudinaryV2): Promise<{ secure_url: string }> {
     return new Promise(async (resolve, reject) => {
-        const url = String(youtubeUrl || "").trim();
-        if (!url) {
+        const rawUrl = String(youtubeUrl || "").trim();
+        if (!rawUrl) {
             reject(new Error("Missing youtubeUrl"));
             return;
         }
+        // Làm sạch link: bỏ tham số playlist/radio (&list=..., &index=..., ...)
+        const url = rawUrl.split("&")[0];
 
         // Download + extract audio bằng yt-dlp (qua youtube-dl-exec).
         // Note: yêu cầu có ffmpeg trong PATH để extract/convert mp3.
@@ -83,8 +85,6 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             await fs.promises.mkdir(tempDir, { recursive: true });
 
             await ytdlExec(url, {
-                // Ép lấy định dạng âm thanh tốt nhất có thể (không kén chọn)
-                format: "bestaudio/best",
                 noPlaylist: true,
                 extractAudio: true,
                 audioFormat: "mp3",
@@ -94,6 +94,11 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                 output: outTemplate,
                 // Cookies để vượt chặn datacenter IP (Render)
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                // “Nịnh” YouTube để cookies hoạt động ổn định hơn
+                addHeader: [
+                    "referer:https://www.google.com/",
+                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                ],
                 // Ít spam log
                 quiet: true,
                 noWarnings: true,

@@ -42,11 +42,12 @@ function streamUploadBuffer(buffer, cloudinaryAccount) {
 }
 function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
     return new Promise(async (resolve, reject) => {
-        const url = String(youtubeUrl || "").trim();
-        if (!url) {
+        const rawUrl = String(youtubeUrl || "").trim();
+        if (!rawUrl) {
             reject(new Error("Missing youtubeUrl"));
             return;
         }
+        const url = rawUrl.split("&")[0];
         const tempDir = path_1.default.join(os_1.default.tmpdir(), "music_app_youtube");
         const jobId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
         const outTemplate = path_1.default.join(tempDir, `${jobId}.%(ext)s`);
@@ -55,7 +56,6 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
             await (0, youtube_dl_exec_1.default)(url, {
-                format: "bestaudio/best",
                 noPlaylist: true,
                 extractAudio: true,
                 audioFormat: "mp3",
@@ -63,6 +63,10 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
                 postprocessorArgs: "ffmpeg:-b:a 128k",
                 output: outTemplate,
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                addHeader: [
+                    "referer:https://www.google.com/",
+                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                ],
                 quiet: true,
                 noWarnings: true,
             });
