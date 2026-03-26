@@ -84,34 +84,37 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
         try {
             await fs.promises.mkdir(tempDir, { recursive: true });
 
-            const ytdlpFlags: any = {
-                // Thử chuỗi format linh hoạt để “hốt” bất cứ thứ gì có tiếng về trước
-                format: "ba/b",
-                noPlaylist: true,
-                extractAudio: true,
-                audioFormat: "mp3",
-				ffmpegLocation: ffmpeg,
-                // Giữ nén 128kbps (youtube-dl-exec typings dùng string)
-                postprocessorArgs: "ffmpeg:-b:a 128k",
-                output: outTemplate,
-                // Cookies để vượt chặn datacenter IP (Render)
-                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
-                // Xóa cache cũ để tránh lưu lại lỗi format trước đó
-                rmCacheDir: true,
-                // Giả lập thiết bị mweb/tv và bỏ DASH/HLS để né chặn datacenter IP
-                // (yt-dlp flag: --extractor-args "youtube:player_client=mweb,tv;skip=dash,hls")
-                extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
-                // “Nịnh” YouTube để cookies hoạt động ổn định hơn
-                addHeader: [
-                    "referer:https://www.google.com/",
-                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                ],
-                // Ít spam log
-                quiet: true,
-                noWarnings: true,
-            };
+            // Cấu hình “tổng lực” cho môi trường Cloud (Render):
+            // - Giả lập client mweb để nhận format “dễ tải” hơn
+            // - Xóa cache để tránh lưu config lỗi trước đó
+            // - Cookies + headers để vượt chặn datacenter IP
+            const argv: string[] = [
+                "--no-playlist",
+                "--extract-audio",
+                "--audio-format",
+                "mp3",
+                "--ffmpeg-location",
+                String(ffmpeg || ""),
+                "--postprocessor-args",
+                "ffmpeg:-b:a 128k",
+                "--output",
+                outTemplate,
+                "--rm-cache-dir",
+                "--extractor-args",
+                "youtube:player_client=mweb",
+                "--add-header",
+                "referer:https://www.google.com/",
+                "--add-header",
+                "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "--quiet",
+                "--no-warnings",
+            ];
 
-            await ytdlExec(url, ytdlpFlags);
+            if (hasCookiesFile) {
+                argv.splice(0, 0, "--cookies", cookiePath);
+            }
+
+            await (ytdlExec as any).exec(url, argv);
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
             const waitForReadable = async (p: string, attempts = 15) => {

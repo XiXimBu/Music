@@ -55,25 +55,31 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         let uploadedOk = false;
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
-            const ytdlpFlags = {
-                format: "ba/b",
-                noPlaylist: true,
-                extractAudio: true,
-                audioFormat: "mp3",
-                ffmpegLocation: ffmpeg_static_1.default,
-                postprocessorArgs: "ffmpeg:-b:a 128k",
-                output: outTemplate,
-                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
-                rmCacheDir: true,
-                extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
-                addHeader: [
-                    "referer:https://www.google.com/",
-                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                ],
-                quiet: true,
-                noWarnings: true,
-            };
-            await (0, youtube_dl_exec_1.default)(url, ytdlpFlags);
+            const argv = [
+                "--no-playlist",
+                "--extract-audio",
+                "--audio-format",
+                "mp3",
+                "--ffmpeg-location",
+                String(ffmpeg_static_1.default || ""),
+                "--postprocessor-args",
+                "ffmpeg:-b:a 128k",
+                "--output",
+                outTemplate,
+                "--rm-cache-dir",
+                "--extractor-args",
+                "youtube:player_client=mweb",
+                "--add-header",
+                "referer:https://www.google.com/",
+                "--add-header",
+                "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "--quiet",
+                "--no-warnings",
+            ];
+            if (hasCookiesFile) {
+                argv.splice(0, 0, "--cookies", cookiePath);
+            }
+            await youtube_dl_exec_1.default.exec(url, argv);
             const waitForReadable = async (p, attempts = 15) => {
                 for (let i = 0; i < attempts; i++) {
                     try {
