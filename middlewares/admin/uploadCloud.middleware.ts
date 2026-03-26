@@ -87,23 +87,38 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             // Cấu hình “tổng lực” cho môi trường Cloud (Render).
             // IMPORTANT: dùng flags object (không truyền argv array), tránh lỗi flatten kiểu `-0`, `--13`, `--14`.
             const options: any = {
-                noPlaylist: true,
+                // 1) ÉP LẤY LUỒNG ÂM THANH (ưu tiên m4a trước)
+                format: "bestaudio[ext=m4a]/bestaudio/best",
+
+                // 2) GIẢ LẬP THIẾT BỊ “SẠCH” (iOS/Android/mweb) + hiện formats missing POT
+                extractorArgs: "youtube:player_client=ios,android,mweb;formats=missing_pot",
+
                 extractAudio: true,
                 audioFormat: "mp3",
                 ffmpegLocation: ffmpeg,
-                postprocessorArgs: "ffmpeg:-b:a 128k",
-                output: outTemplate,
-                rmCacheDir: true,
-                // Giả lập client mweb
-                extractorArgs: "youtube:player_client=mweb",
-                // Cookies + headers để vượt chặn datacenter IP
-                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                noPlaylist: true,
+
+                // 3) DÙNG IPv4 (Render/Cloud ổn định hơn)
+                forceIpv4: true,
+
+                // 4) HEADER TỐI ƯU
                 addHeader: [
-                    "referer:https://www.google.com/",
-                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    "user-agent:Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+                    "accept-language:vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
                 ],
+
+                postprocessorArgs: "ffmpeg:-b:a 128k",
+
+                rmCacheDir: true,
+                noCheckCertificates: true,
                 quiet: true,
                 noWarnings: true,
+
+                // output template (file tạm)
+                output: outTemplate,
+
+                // Cookies để vượt chặn datacenter IP (Render)
+                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
 
             await ytdlExec(url, options);

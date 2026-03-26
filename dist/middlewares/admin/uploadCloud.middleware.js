@@ -56,21 +56,24 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
             const options = {
-                noPlaylist: true,
+                format: "bestaudio[ext=m4a]/bestaudio/best",
+                extractorArgs: "youtube:player_client=ios,android,mweb;formats=missing_pot",
                 extractAudio: true,
                 audioFormat: "mp3",
                 ffmpegLocation: ffmpeg_static_1.default,
-                postprocessorArgs: "ffmpeg:-b:a 128k",
-                output: outTemplate,
-                rmCacheDir: true,
-                extractorArgs: "youtube:player_client=mweb",
-                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                noPlaylist: true,
+                forceIpv4: true,
                 addHeader: [
-                    "referer:https://www.google.com/",
-                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    "user-agent:Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+                    "accept-language:vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
                 ],
+                postprocessorArgs: "ffmpeg:-b:a 128k",
+                rmCacheDir: true,
+                noCheckCertificates: true,
                 quiet: true,
                 noWarnings: true,
+                output: outTemplate,
+                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
             await (0, youtube_dl_exec_1.default)(url, options);
             const waitForReadable = async (p, attempts = 15) => {
