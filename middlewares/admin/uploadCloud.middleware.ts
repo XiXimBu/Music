@@ -25,21 +25,15 @@ type ReqWithSingleFile = Request & {
 
 type CloudinaryV2 = typeof cloudinaryImage;
 
-// Render (datacenter IP) dễ bị YouTube chặn; nếu có cookies file thì cấp cho yt-dlp như “hộ chiếu”.
-// youtube-dl-exec/yt-dlp nhận `cookies` là đường dẫn file cookies.
-const cookiesFilePath = (() => {
-    const candidates = [
-        path.resolve(process.cwd(), "cookies.txt"),
-        path.resolve(process.cwd(), "cookies.json"),
-    ];
-    for (const p of candidates) {
-        try {
-            if (fs.existsSync(p)) return p;
-        } catch {
-            // ignore
-        }
+// Render (datacenter IP) dễ bị YouTube chặn; cấp “hộ chiếu” cookies cho yt-dlp.
+// IMPORTANT: chỉ dùng Netscape cookie file `cookies.txt` để tránh nhầm JSON.
+const cookiePath = path.resolve(process.cwd(), "cookies.txt");
+const hasCookiesFile = (() => {
+    try {
+        return fs.existsSync(cookiePath);
+    } catch {
+        return false;
     }
-    return undefined;
 })();
 
 /** Upload buffer lên Cloudinary qua stream */
@@ -98,7 +92,7 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                 output: outTemplate,
                 // Giảm rủi ro lỗi certificate / geo edge cases
                 preferFreeFormats: true,
-                ...(cookiesFilePath ? { cookies: cookiesFilePath } : {}),
+                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
                 // Ít spam log
                 quiet: true,
                 noWarnings: true,

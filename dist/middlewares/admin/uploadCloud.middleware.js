@@ -12,20 +12,14 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const os_1 = __importDefault(require("os"));
 const session_toast_helper_1 = require("../../helpers/session-toast.helper");
-const cookiesFilePath = (() => {
-    const candidates = [
-        path_1.default.resolve(process.cwd(), "cookies.txt"),
-        path_1.default.resolve(process.cwd(), "cookies.json"),
-    ];
-    for (const p of candidates) {
-        try {
-            if (fs_1.default.existsSync(p))
-                return p;
-        }
-        catch {
-        }
+const cookiePath = path_1.default.resolve(process.cwd(), "cookies.txt");
+const hasCookiesFile = (() => {
+    try {
+        return fs_1.default.existsSync(cookiePath);
     }
-    return undefined;
+    catch {
+        return false;
+    }
 })();
 function streamUploadBuffer(buffer, cloudinaryAccount) {
     return new Promise((resolve, reject) => {
@@ -68,7 +62,7 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
                 postprocessorArgs: "ffmpeg:-b:a 128k",
                 output: outTemplate,
                 preferFreeFormats: true,
-                ...(cookiesFilePath ? { cookies: cookiesFilePath } : {}),
+                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
                 quiet: true,
                 noWarnings: true,
             });

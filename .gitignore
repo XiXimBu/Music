@@ -11,6 +11,13 @@ node_modules/
 .env.*.local
 
 # ==============================
+# YouTube cookies (yt-dlp)
+# ==============================
+cookies.txt
+cookies.text
+cookies.json
+
+# ==============================
 # Logs
 # ==============================
 *.log
