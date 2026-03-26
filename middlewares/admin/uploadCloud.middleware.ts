@@ -84,37 +84,29 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
         try {
             await fs.promises.mkdir(tempDir, { recursive: true });
 
-            // Cấu hình “tổng lực” cho môi trường Cloud (Render):
-            // - Giả lập client mweb để nhận format “dễ tải” hơn
-            // - Xóa cache để tránh lưu config lỗi trước đó
-            // - Cookies + headers để vượt chặn datacenter IP
-            const argv: string[] = [
-                "--no-playlist",
-                "--extract-audio",
-                "--audio-format",
-                "mp3",
-                "--ffmpeg-location",
-                String(ffmpeg || ""),
-                "--postprocessor-args",
-                "ffmpeg:-b:a 128k",
-                "--output",
-                outTemplate,
-                "--rm-cache-dir",
-                "--extractor-args",
-                "youtube:player_client=mweb",
-                "--add-header",
-                "referer:https://www.google.com/",
-                "--add-header",
-                "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                "--quiet",
-                "--no-warnings",
-            ];
+            // Cấu hình “tổng lực” cho môi trường Cloud (Render).
+            // IMPORTANT: dùng flags object (không truyền argv array), tránh lỗi flatten kiểu `-0`, `--13`, `--14`.
+            const options: any = {
+                noPlaylist: true,
+                extractAudio: true,
+                audioFormat: "mp3",
+                ffmpegLocation: ffmpeg,
+                postprocessorArgs: "ffmpeg:-b:a 128k",
+                output: outTemplate,
+                rmCacheDir: true,
+                // Giả lập client mweb
+                extractorArgs: "youtube:player_client=mweb",
+                // Cookies + headers để vượt chặn datacenter IP
+                ...(hasCookiesFile ? { cookies: cookiePath } : {}),
+                addHeader: [
+                    "referer:https://www.google.com/",
+                    "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                ],
+                quiet: true,
+                noWarnings: true,
+            };
 
-            if (hasCookiesFile) {
-                argv.splice(0, 0, "--cookies", cookiePath);
-            }
-
-            await (ytdlExec as any).exec(url, argv);
+            await ytdlExec(url, options);
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
             const waitForReadable = async (p: string, attempts = 15) => {
