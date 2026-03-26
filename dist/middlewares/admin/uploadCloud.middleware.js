@@ -55,7 +55,7 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         let uploadedOk = false;
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
-            const options = {
+            const baseOptions = {
                 format: "bestaudio[ext=m4a]/bestaudio/best",
                 extractorArgs: "youtube:player_client=ios,android,mweb;formats=missing_pot",
                 extractAudio: true,
@@ -75,7 +75,26 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
                 output: outTemplate,
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
-            await (0, youtube_dl_exec_1.default)(url, options);
+            const isRequestedFormatNotAvailable = (err) => {
+                const stderr = String(err?.stderr || "");
+                const msg = String(err?.message || "");
+                return (stderr.includes("Requested format is not available") ||
+                    msg.includes("Requested format is not available"));
+            };
+            try {
+                await (0, youtube_dl_exec_1.default)(url, baseOptions);
+            }
+            catch (err) {
+                if (!isRequestedFormatNotAvailable(err))
+                    throw err;
+                const retry1 = {
+                    ...baseOptions,
+                    format: undefined,
+                    extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
+                    noCheckFormats: true,
+                };
+                await (0, youtube_dl_exec_1.default)(url, retry1);
+            }
             const waitForReadable = async (p, attempts = 15) => {
                 for (let i = 0; i < attempts; i++) {
                     try {

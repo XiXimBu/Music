@@ -86,7 +86,7 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
 
             // Cấu hình “tổng lực” cho môi trường Cloud (Render).
             // IMPORTANT: dùng flags object (không truyền argv array), tránh lỗi flatten kiểu `-0`, `--13`, `--14`.
-            const options: any = {
+            const baseOptions: any = {
                 // 1) ÉP LẤY LUỒNG ÂM THANH (ưu tiên m4a trước)
                 format: "bestaudio[ext=m4a]/bestaudio/best",
 
@@ -121,7 +121,30 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
 
-            await ytdlExec(url, options);
+            const isRequestedFormatNotAvailable = (err: unknown): boolean => {
+                const stderr = String((err as any)?.stderr || "");
+                const msg = String((err as any)?.message || "");
+                return (
+                    stderr.includes("Requested format is not available") ||
+                    msg.includes("Requested format is not available")
+                );
+            };
+
+            try {
+                await ytdlExec(url, baseOptions);
+            } catch (err) {
+                if (!isRequestedFormatNotAvailable(err)) throw err;
+
+                // Retry #1: bỏ format + chuyển client sang mweb/tv, bỏ dash/hls
+                const retry1: any = {
+                    ...baseOptions,
+                    format: undefined,
+                    extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
+                    // đừng check formats quá chặt
+                    noCheckFormats: true,
+                };
+                await ytdlExec(url, retry1);
+            }
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
             const waitForReadable = async (p: string, attempts = 15) => {
