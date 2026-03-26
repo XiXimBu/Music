@@ -21,6 +21,26 @@ const hasCookiesFile = (() => {
         return false;
     }
 })();
+const resolveYtDlpBinaryPath = () => {
+    const candidates = [
+        process.env.YT_DLP_BIN,
+        process.env.YOUTUBE_DL_PATH,
+        path_1.default.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"),
+        "/usr/bin/yt-dlp",
+        "/usr/local/bin/yt-dlp",
+    ].filter(Boolean);
+    for (const p of candidates) {
+        try {
+            if (fs_1.default.existsSync(p))
+                return p;
+        }
+        catch {
+        }
+    }
+    return undefined;
+};
+const ytDlpBinaryPath = resolveYtDlpBinaryPath();
+const ytDlpRunner = ytDlpBinaryPath ? youtube_dl_exec_1.default.create(ytDlpBinaryPath) : youtube_dl_exec_1.default;
 function streamUploadBuffer(buffer, cloudinaryAccount) {
     return new Promise((resolve, reject) => {
         const stream = cloudinaryAccount.uploader.upload_stream({
@@ -82,7 +102,7 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
                     msg.includes("Requested format is not available"));
             };
             try {
-                await (0, youtube_dl_exec_1.default)(url, baseOptions);
+                await ytDlpRunner(url, baseOptions);
             }
             catch (err) {
                 if (!isRequestedFormatNotAvailable(err))
@@ -93,7 +113,7 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
                     extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
                     noCheckFormats: true,
                 };
-                await (0, youtube_dl_exec_1.default)(url, retry1);
+                await ytDlpRunner(url, retry1);
             }
             const waitForReadable = async (p, attempts = 15) => {
                 for (let i = 0; i < attempts; i++) {
@@ -143,6 +163,10 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
             resolve(uploaded);
         }
         catch (err) {
+            const isSpawnMissingBinary = String(err?.code || "") === "ENOENT";
+            if (isSpawnMissingBinary) {
+                console.error("YT-DLP binary not found. Set YT_DLP_BIN or install yt-dlp on host.", { ytDlpBinaryPath });
+            }
             console.error("YT-DLP Error:", err);
             reject(err);
         }

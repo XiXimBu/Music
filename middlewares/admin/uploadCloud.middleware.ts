@@ -36,6 +36,30 @@ const hasCookiesFile = (() => {
     }
 })();
 
+// youtube-dl-exec có thể không có binary khi YOUTUBE_DL_SKIP_DOWNLOAD=1.
+// Trên Render, fallback sang yt-dlp hệ thống hoặc path chỉ định bằng env.
+const resolveYtDlpBinaryPath = (): string | undefined => {
+    const candidates = [
+        process.env.YT_DLP_BIN,
+        process.env.YOUTUBE_DL_PATH,
+        path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"),
+        "/usr/bin/yt-dlp",
+        "/usr/local/bin/yt-dlp",
+    ].filter(Boolean) as string[];
+
+    for (const p of candidates) {
+        try {
+            if (fs.existsSync(p)) return p;
+        } catch {
+            // ignore
+        }
+    }
+    return undefined;
+};
+
+const ytDlpBinaryPath = resolveYtDlpBinaryPath();
+const ytDlpRunner = ytDlpBinaryPath ? ytdlExec.create(ytDlpBinaryPath) : ytdlExec;
+
 /** Upload buffer lên Cloudinary qua stream */
 function streamUploadBuffer(buffer: Buffer, cloudinaryAccount: CloudinaryV2): Promise<{ secure_url: string }> {
     return new Promise((resolve, reject) => {
@@ -131,7 +155,7 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             };
 
             try {
-                await ytdlExec(url, baseOptions);
+                await ytDlpRunner(url, baseOptions);
             } catch (err) {
                 if (!isRequestedFormatNotAvailable(err)) throw err;
 
@@ -143,7 +167,7 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
                     // đừng check formats quá chặt
                     noCheckFormats: true,
                 };
-                await ytdlExec(url, retry1);
+                await ytDlpRunner(url, retry1);
             }
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
@@ -202,6 +226,13 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             uploadedOk = true;
             resolve(uploaded);
         } catch (err) {
+            const isSpawnMissingBinary = String((err as any)?.code || "") === "ENOENT";
+            if (isSpawnMissingBinary) {
+                console.error(
+                    "YT-DLP binary not found. Set YT_DLP_BIN or install yt-dlp on host.",
+                    { ytDlpBinaryPath }
+                );
+            }
             console.error("YT-DLP Error:", err);
             reject(err);
         } finally {
