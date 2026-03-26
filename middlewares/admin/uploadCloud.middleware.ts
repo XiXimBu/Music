@@ -36,29 +36,18 @@ const hasCookiesFile = (() => {
     }
 })();
 
-// youtube-dl-exec có thể không có binary khi YOUTUBE_DL_SKIP_DOWNLOAD=1.
-// Trên Render, fallback sang yt-dlp hệ thống hoặc path chỉ định bằng env.
-const resolveYtDlpBinaryPath = (): string | undefined => {
-    const candidates = [
-        process.env.YT_DLP_BIN,
-        process.env.YOUTUBE_DL_PATH,
-        path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"),
-        "/usr/bin/yt-dlp",
-        "/usr/local/bin/yt-dlp",
-    ].filter(Boolean) as string[];
-
-    for (const p of candidates) {
-        try {
-            if (fs.existsSync(p)) return p;
-        } catch {
-            // ignore
-        }
-    }
-    return undefined;
+// youtube-dl-exec có thể không có binary local khi YOUTUBE_DL_SKIP_DOWNLOAD=1.
+// Ưu tiên path từ env; nếu không có thì fallback gọi "yt-dlp" từ PATH hệ thống.
+const getExecutablePath = (): string => {
+    if (process.env.YT_DLP_BIN) return process.env.YT_DLP_BIN;
+    if (process.env.YOUTUBE_DL_PATH) return process.env.YOUTUBE_DL_PATH;
+    const bundled = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
+    if (fs.existsSync(bundled)) return bundled;
+    return "yt-dlp";
 };
 
-const ytDlpBinaryPath = resolveYtDlpBinaryPath();
-const ytDlpRunner = ytDlpBinaryPath ? ytdlExec.create(ytDlpBinaryPath) : ytdlExec;
+const ytExecutable = getExecutablePath();
+const ytDlpRunner = ytdlExec.create(ytExecutable);
 
 /** Upload buffer lên Cloudinary qua stream */
 function streamUploadBuffer(buffer: Buffer, cloudinaryAccount: CloudinaryV2): Promise<{ secure_url: string }> {
@@ -229,8 +218,12 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             const isSpawnMissingBinary = String((err as any)?.code || "") === "ENOENT";
             if (isSpawnMissingBinary) {
                 console.error(
-                    "YT-DLP binary not found. Set YT_DLP_BIN or install yt-dlp on host.",
-                    { ytDlpBinaryPath }
+                    "YT-DLP binary not found. Set YT_DLP_BIN/YOUTUBE_DL_PATH or ensure `yt-dlp` is in PATH.",
+                    {
+                        ytExecutable,
+                        YT_DLP_BIN: process.env.YT_DLP_BIN,
+                        YOUTUBE_DL_PATH: process.env.YOUTUBE_DL_PATH,
+                    }
                 );
             }
             console.error("YT-DLP Error:", err);
