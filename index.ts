@@ -110,11 +110,8 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
     });
 });
 
-// Local/dev thi listen, tren Vercel thi export app cho serverless runtime.
-if (!process.env.VERCEL) {
-	app.listen(port, () => {
-		console.log(`App is listening on port ${port}`);
-	});
-}
-
+// Render/Local: luôn listen theo PORT do platform cấp (fallback 3000).
+app.listen(port, () => {
+	console.log(`Server đang chạy ở port ${port}`);
+});
 export default app;

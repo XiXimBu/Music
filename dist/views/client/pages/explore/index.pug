@@ -7,7 +7,7 @@ block main
       h1.font-headline.text-3xl.font-bold.text-slate-100.mb-4 Khám phá MusicXi
       p.text-slate-400.text-lg Trải nghiệm không gian âm nhạc không giới hạn với những đặc quyền được thiết kế riêng cho bạn.
 
-    //- PHẦN 1: ĐẶC QUYỀN KHI ĐĂNG NHẬP (Dạng Grid 3 cột)
+    //- PHẦN 1: ĐẶC QUYỀN KHI ĐĂNG NHẬP
     section.mb-12
       h2.text-2xl.font-bold.text-teal-400.mb-6 1. Đặc quyền dành cho thành viên
       p.text-slate-300.mb-6 Đăng nhập ngay để mở khóa toàn bộ trải nghiệm cá nhân hóa, giúp việc nghe nhạc của bạn trở nên tuyệt vời hơn:
@@ -34,7 +34,7 @@ block main
             h3.font-bold.text-slate-100.text-lg.mb-2 🌟 Follow Nghệ sĩ
             p.text-sm.text-slate-400 Cập nhật nhanh nhất những bản hit mới từ thần tượng. Theo dõi ca sĩ bạn yêu thích chỉ với một nút bấm.
 
-    //- PHẦN 2: TÍNH NĂNG KÉO NHẠC YOUTUBE (Highlight Box)
+    //- PHẦN 2: TÍNH NĂNG KÉO NHẠC YOUTUBE
     section
       h2.text-2xl.font-bold.text-teal-400.mb-6 2. Tính năng "Hack" nhạc đỉnh cao
       
@@ -44,7 +44,7 @@ block main
         div.text-slate-300.space-y-4.leading-relaxed
           p Bạn có một bài hát cực "suy" trên YouTube nhưng lại lười tải về vì sợ đầy bộ nhớ điện thoại? Hay bạn chán ngấy cảnh đang phiêu theo điệu nhạc thì bị quảng cáo chèn ngang?
           
-          p Đừng lo! Bí mật nằm ở trang quản trị của chúng tôi. Chỉ cần truy cập vào đường dẫn:
+          p Đừng lo! Bí mật nằm ở trang quản trị Chỉ cần truy cập vào đường dẫn:
           
           div.my-4
             a(class="inline-flex items-center gap-2 bg-black/50 px-4 py-2 rounded-lg text-teal-400 font-mono border border-teal-400/20 hover:bg-black/70 transition-colors" href="/admin/song")
@@ -58,3 +58,44 @@ block main
             li Hệ thống sẽ tự động xử lý để bạn nghe trực tiếp trên web cực kỳ mượt mà.
             
           p.mt-6.text-teal-300.font-medium.italic * Kết quả: Tận hưởng âm nhạc chất lượng cao, tắt màn hình vẫn nghe được, không dính 1 giây quảng cáo nào và thiết bị của bạn hoàn toàn trống rỗng (không tốn 1MB lưu trữ)!
+
+        //- PHẦN THÊM: Lưu ý tìm kiếm và hình ảnh
+        div.mt-12.border-t.border-gray-700.pt-10
+          div(class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center")
+            
+            //- Cột 1: Hình ảnh minh họa
+            div.relative.group
+              div(class="absolute -inset-1 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000")
+              
+              //- Thẻ ảnh thực tế
+              img(
+                src="https://res.cloudinary.com/dai4kn53o/image/upload/v1774513412/Screenshot_2026-03-26_152152_utners.png" 
+                alt="Minh họa tìm kiếm âm nhạc"
+                class="relative rounded-xl shadow-2xl w-full object-cover transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
+              )
+
+            //- Cột 2: Nội dung lưu ý
+            div.space-y-6
+              div.flex.items-center.gap-4
+                div(class="p-3 rounded-full bg-teal-950 border border-teal-500/30")
+                  span.material-symbols-outlined.text-teal-400.text-3xl search
+                h3.text-2xl.font-bold.text-white.tracking-tight Lưu ý khi tìm kiếm nhạc
+
+              p.text-gray-300.leading-relaxed
+                | Trước khi sử dụng tính năng tải nhạc từ YouTube, hãy trải nghiệm sự tiện lợi của 
+                span.font-semibold.text-teal-300 Thanh tìm kiếm thông minh
+                |  ngay phía trên đầu trang.
+
+              //- Box điểm nhấn
+              div(class="bg-gray-900/50 border border-gray-700 rounded-xl p-5 space-y-4")
+                div.flex.items-start.gap-3
+                  span(class="material-symbols-outlined text-emerald-400 mt-0.5 check_circle")
+                  p.text-sm.text-gray-200
+                    span.font-medium.text-white Tự động gợi ý: 
+                    | Hệ thống sẽ ngay lập tức hiển thị các bài hát, nghệ sĩ hoặc album khớp với từ khóa bạn nhập nếu chúng đã được tối ưu hóa và lưu trữ sẵn.
+                
+                div.flex.items-start.gap-3
+                  span(class="material-symbols-outlined text-amber-400 mt-0.5") info
+                  p.text-sm.text-gray-200
+                    span.font-medium.text-white Tiết kiệm thời gian: 
+                    | Nếu bài hát đã có, bạn có thể thưởng thức ngay mà không cần chờ đợi hệ thống xử lý.

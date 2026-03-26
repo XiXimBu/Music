@@ -112,9 +112,7 @@ app.use((error, req, res, next) => {
         message: error.message || "Internal server error",
     });
 });
-if (!process.env.VERCEL) {
-    app.listen(port, () => {
-        console.log(`App is listening on port ${port}`);
-    });
-}
+app.listen(port, () => {
+    console.log(`Server đang chạy ở port ${port}`);
+});
 exports.default = app;
