@@ -55,13 +55,13 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
             await (0, youtube_dl_exec_1.default)(url, {
+                format: "bestaudio/best",
                 noPlaylist: true,
                 extractAudio: true,
                 audioFormat: "mp3",
                 ffmpegLocation: ffmpeg_static_1.default,
                 postprocessorArgs: "ffmpeg:-b:a 128k",
                 output: outTemplate,
-                preferFreeFormats: true,
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
                 quiet: true,
                 noWarnings: true,

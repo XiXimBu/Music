@@ -83,15 +83,16 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             await fs.promises.mkdir(tempDir, { recursive: true });
 
             await ytdlExec(url, {
+                // Ép lấy định dạng âm thanh tốt nhất có thể (không kén chọn)
+                format: "bestaudio/best",
                 noPlaylist: true,
                 extractAudio: true,
                 audioFormat: "mp3",
 				ffmpegLocation: ffmpeg,
-                // Ép bitrate 128kbps (CBR) qua ffmpeg args để chắc chắn.
+                // Giữ nén 128kbps (youtube-dl-exec typings dùng string)
                 postprocessorArgs: "ffmpeg:-b:a 128k",
                 output: outTemplate,
-                // Giảm rủi ro lỗi certificate / geo edge cases
-                preferFreeFormats: true,
+                // Cookies để vượt chặn datacenter IP (Render)
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
                 // Ít spam log
                 quiet: true,
