@@ -1,6 +1,9 @@
 //- Sticky Mini Player
 
-#sticky-player(class="hidden fixed bottom-24 left-0 right-0 z-40 px-2 md:bottom-4 md:left-1/2 md:-translate-x-1/2 md:w-[90%] md:px-0 max-w-6xl")
+#sticky-player(
+  class="hidden fixed bottom-24 left-0 right-0 z-40 px-2 md:bottom-4 md:left-1/2 md:-translate-x-1/2 md:w-[90%] md:px-0 max-w-6xl"
+  data-turbo-permanent
+)
   div(class="glass mx-auto w-full p-2 md:p-3 rounded-2xl flex items-center justify-between gap-3 border shadow-[0px_20px_40px_rgba(0,0,0,0.4)] border-outline-variant/10 relative")
     
     //- 1. Progress Bar (Hiện cả trên Mobile để người dùng theo dõi)
@@ -11,15 +14,18 @@
     .flex.items-center.gap-3.min-w-0.flex-1(class="md:flex-none md:w-64")
       img#player-cover.w-10.h-10.rounded-lg.object-cover(class="md:w-12 md:h-12 md:rounded-xl shadow-md" src="/images/default-song.png" alt="Current Play")
       .min-w-0
+        //- Đã fix lỗi text-[10px] bằng cách dùng text-xs chuẩn của Tailwind
         h4#player-title.font-bold.text-xs.truncate(class="md:text-base text-on-surface") No Song Selected
         p#player-artist.text-on-surface-variant.truncate(class="text-[10px] md:text-xs") Select a track
     
-    //- 3. Controls (Tối ưu nút bấm cho Mobile)
+    //- 3. Controls (Mobile chỉ hiện Prev, Play, Next)
     div(class="flex items-center gap-2 md:gap-6")
-      //- Shuffle & Prev: Ẩn trên Mobile nhỏ, hiện từ sm (640px)
+      //- Shuffle: Ẩn trên Mobile, hiện từ md (Desktop)
       button#player-shuffle-btn.hidden(class="md:block text-on-surface-variant hover:text-primary transition-colors")
         span.material-symbols-outlined.text-xl shuffle
-      button#player-prev-btn.hidden(class="sm:block text-on-surface hover:text-primary transition-colors")
+      
+      //- Prev: Đã bỏ hidden để hiện trên CẢ Mobile và Desktop
+      button#player-prev-btn(class="text-on-surface hover:text-primary transition-colors")
         span.material-symbols-outlined.text-2xl skip_previous
       
       //- Play/Pause (Luôn hiện)
@@ -31,15 +37,15 @@
           class="!text-2xl md:!text-3xl"
         ) play_arrow
       
-      //- Next (Luôn hiện trên Mobile)
+      //- Next (Luôn hiện)
       button#player-next-btn.text-on-surface(class="hover:text-primary transition-colors")
         span.material-symbols-outlined.text-2xl skip_next
       
-      //- Repeat: Ẩn trên Mobile
+      //- Repeat: Ẩn trên Mobile, hiện từ md (Desktop)
       button#player-repeat-btn.hidden(class="md:block text-on-surface-variant hover:text-primary transition-colors")
         span.material-symbols-outlined.text-xl repeat
     
-    //- 4. Volume (Chỉ hiện trên Desktop)
+    //- 4. Volume (Chỉ hiện trên Desktop - Giữ nguyên gốc 100%)
     div(class="hidden lg:flex items-center gap-4 px-2 w-48 justify-end")
       .flex.items-center.gap-2.text-on-surface-variant.w-full
         span.material-symbols-outlined.text-xl volume_up

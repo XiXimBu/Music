@@ -10,7 +10,7 @@ html(lang="vi")
     link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
     link(href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet")
     link(href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet")
-    script(src="https://unpkg.com/htmx.org@1.9.12")
+    script(src="https://unpkg.com/@hotwired/turbo@8.0.12/dist/turbo.es2017-umd.js")
     //- 2. Tailwind Library
     script(src="https://cdn.tailwindcss.com?plugins=forms,container-queries")
 
@@ -227,9 +227,6 @@ html(lang="vi")
     link(rel="stylesheet" href="/client/css/style.css")
 
   body(
-    hx-boost="true"
-    hx-target="#app-shell"
-    hx-select="#app-shell"
     class="bg-surface text-on-surface font-body selection:bg-secondary selection:text-on-secondary"
     data-user-authenticated=(isAuthenticated ? "1" : "0")
   )
@@ -245,7 +242,7 @@ html(lang="vi")
     include ../partials/player.pug
 
     //- 5. JS Logic
-    script(src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js" data-turbo-eval="false")
     //- script(src="/client/javascript/handle.home.js" defer)
     //- script(type="module" src="/client/javascript/handle.player.js" defer)
     //- script(src="/client/javascript/handle.previous.js" defer)
@@ -255,4 +252,4 @@ html(lang="vi")
     //- script(src="/client/javascript/handle.follow.js" defer)
     //- script(src="/client/javascript/handle.htmx.js" defer)
     //- script(type="module" src="/client/javascript/handle.history.js" defer)
-    script(src="/dist/js/main.bundle.js" defer)
+    script(src="/dist/js/main.bundle.js" defer data-turbo-eval="false")

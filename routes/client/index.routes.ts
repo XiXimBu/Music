@@ -8,6 +8,7 @@ import userRoutes from "./user.routes";
 import playlistRoutes from "./playlist.routes";
 import followArtistRoutes from "./follow.artist.routes";
 import listenHistoryRoutes from "./listen.history.routes";
+import exploreRoutes from "./explore.routes";
 
 
 
@@ -16,6 +17,7 @@ const clientRoutes = (app: Express): void => {
   app.use(`/artist`, artistRoutes);
   app.use(`/topics`, topicRoutes);
   app.use(`/home`, homeRoutes);
+  app.use(`/explore`, exploreRoutes);
   app.use(`/`, homeRoutes);
   app.use(`/search`, searchRoutes);
   app.use(`/user`, userRoutes);

@@ -1,8 +1,8 @@
 /**
  * Entry duy nhất cho esbuild — gom toàn bộ logic client vào main.bundle.js
- * (thứ tự: htmx → player + track-data → các module còn lại)
+ * (thứ tự: Turbo page lifecycle → player + track-data → các module còn lại)
  */
-import "./handle.htmx.js";
+import "./handle.turbo.js";
 import "./handle.player.js";
 import "./handle.history.js";
 import "./handle.home.js";

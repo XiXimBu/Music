@@ -1,0 +1,60 @@
+extends ../../layouts/default.pug
+
+block main
+  main.pt-16.min-h-screen.pb-32.px-6(class="md:px-12 max-w-5xl mx-auto")
+    //- Tiêu đề trang
+    div.mb-10.mt-8
+      h1.font-headline.text-3xl.font-bold.text-slate-100.mb-4 Khám phá MusicXi
+      p.text-slate-400.text-lg Trải nghiệm không gian âm nhạc không giới hạn với những đặc quyền được thiết kế riêng cho bạn.
+
+    //- PHẦN 1: ĐẶC QUYỀN KHI ĐĂNG NHẬP (Dạng Grid 3 cột)
+    section.mb-12
+      h2.text-2xl.font-bold.text-teal-400.mb-6 1. Đặc quyền dành cho thành viên
+      p.text-slate-300.mb-6 Đăng nhập ngay để mở khóa toàn bộ trải nghiệm cá nhân hóa, giúp việc nghe nhạc của bạn trở nên tuyệt vời hơn:
+
+      div(class="grid grid-cols-1 md:grid-cols-3 gap-6")
+        //- Card 1: Playlist
+        div(class="bg-white/5 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm transition-transform hover:-translate-y-1")
+          img.w-full.h-40.object-cover(src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?auto=format&fit=crop&q=80&w=600" alt="Tạo Playlist")
+          div.p-5
+            h3.font-bold.text-slate-100.text-lg.mb-2 🎵 Playlist của riêng bạn
+            p.text-sm.text-slate-400 Thêm những bài hát tâm đắc nhất vào bộ sưu tập cá nhân để dễ dàng thưởng thức lại bất cứ lúc nào, cho mọi tâm trạng.
+
+        //- Card 2: Lịch sử nghe nhạc
+        div(class="bg-white/5 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm transition-transform hover:-translate-y-1")
+          img.w-full.h-40.object-cover(src="https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&q=80&w=600" alt="Lịch sử nghe")
+          div.p-5
+            h3.font-bold.text-slate-100.text-lg.mb-2 🕒 Lịch sử nghe nhạc
+            p.text-sm.text-slate-400 Không bao giờ bỏ lỡ giai điệu vô tình nghe được. Hệ thống sẽ tự động lưu lại những bài hát bạn đã thưởng thức.
+
+        //- Card 3: Follow nghệ sĩ
+        div(class="bg-white/5 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm transition-transform hover:-translate-y-1")
+          img.w-full.h-40.object-cover(src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600" alt="Follow Nghệ sĩ")
+          div.p-5
+            h3.font-bold.text-slate-100.text-lg.mb-2 🌟 Follow Nghệ sĩ
+            p.text-sm.text-slate-400 Cập nhật nhanh nhất những bản hit mới từ thần tượng. Theo dõi ca sĩ bạn yêu thích chỉ với một nút bấm.
+
+    //- PHẦN 2: TÍNH NĂNG KÉO NHẠC YOUTUBE (Highlight Box)
+    section
+      h2.text-2xl.font-bold.text-teal-400.mb-6 2. Tính năng "Hack" nhạc đỉnh cao
+      
+      div(class="bg-gradient-to-br from-teal-900/40 to-slate-900/80 p-6 md:p-8 rounded-3xl border border-teal-500/30 shadow-[0px_10px_30px_rgba(45,212,191,0.1)]")
+        h3.text-xl.font-bold.text-slate-100.mb-4 🚀 Nghe nhạc YouTube không quảng cáo, không cần tải về!
+        
+        div.text-slate-300.space-y-4.leading-relaxed
+          p Bạn có một bài hát cực "suy" trên YouTube nhưng lại lười tải về vì sợ đầy bộ nhớ điện thoại? Hay bạn chán ngấy cảnh đang phiêu theo điệu nhạc thì bị quảng cáo chèn ngang?
+          
+          p Đừng lo! Bí mật nằm ở trang quản trị của chúng tôi. Chỉ cần truy cập vào đường dẫn:
+          
+          div.my-4
+            a(class="inline-flex items-center gap-2 bg-black/50 px-4 py-2 rounded-lg text-teal-400 font-mono border border-teal-400/20 hover:bg-black/70 transition-colors" href="/admin/song")
+              span.material-symbols-outlined.text-sm link
+              | domain.com/admin/song
+              
+          p Tại không gian này, bạn nắm toàn quyền kiểm soát:
+          ul.list-disc.list-inside.space-y-2.ml-2.text-slate-400
+            li Thêm bất kỳ <strong class="text-slate-200">Ca sĩ</strong> nào bạn mến mộ.
+            li Copy link bài hát từ YouTube và dán vào hệ thống.
+            li Hệ thống sẽ tự động xử lý để bạn nghe trực tiếp trên web cực kỳ mượt mà.
+            
+          p.mt-6.text-teal-300.font-medium.italic * Kết quả: Tận hưởng âm nhạc chất lượng cao, tắt màn hình vẫn nghe được, không dính 1 giây quảng cáo nào và thiết bị của bạn hoàn toàn trống rỗng (không tốn 1MB lưu trữ)!

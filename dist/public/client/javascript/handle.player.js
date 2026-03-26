@@ -608,7 +608,7 @@ if (document.readyState === 'loading') {
   initPlayer();
 }
 
-// When browser restores history state (back/forward), force player UI resync.
+// Turbo Drive + data-turbo-permanent: DOM player giữ nguyên; mỗi lần đổi trang chỉ cần đồng bộ UI.
 document.addEventListener('app:page-ready', hydratePlayerUI);
 window.addEventListener('pageshow', hydratePlayerUI);
 window.addEventListener('popstate', hydratePlayerUI);

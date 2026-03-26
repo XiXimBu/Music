@@ -44,7 +44,7 @@ block main
               span.font-bold.uppercase.tracking-wider.text-on-surface-variant(class="text-[10px]") Followers
           
           div.flex.flex-wrap.justify-center.gap-4(class="md:justify-start")
-            form(action="/auth/logout" method="POST" hx-boost="false")
+            form(action="/auth/logout" method="POST" data-turbo="false")
               button.px-8.py-3.bg-gradient-to-r.from-secondary.to-secondary-container.text-on-secondary.font-bold.rounded-xl.transition-transform.secondary-glow(type="submit" class="hover:scale-105 active:scale-95") Log out
             button#openEditProfile.px-8.py-3.border.text-on-surface.font-bold.rounded-xl.transition-colors(type="button" class="border-outline-variant/30 hover:bg-surface-container-high") Edit Profile
             button#cancelEditProfile.hidden.px-8.py-3.border.text-on-surface.font-bold.rounded-xl.transition-colors(type="button" class="border-outline-variant/30 hover:bg-surface-container-high") Cancel

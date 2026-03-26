@@ -1,9 +1,18 @@
-//Xử lí video đầu home
+// Xử lý video hero trang home — Turbo: teardown trước khi cache, init lại mỗi lần vào trang (không dùng data-* chặn bind).
+let homeHeroVideoCleanup = null;
+
+const teardownHomeHeroVideo = () => {
+  if (typeof homeHeroVideoCleanup === 'function') {
+    homeHeroVideoCleanup();
+    homeHeroVideoCleanup = null;
+  }
+};
+
 const initHomeHeroVideo = () => {
+  teardownHomeHeroVideo();
+
   const video = document.getElementById('hero-video');
   if (!video) return;
-  if (video.dataset.homeVideoBound === '1') return;
-  video.dataset.homeVideoBound = '1';
 
   const DEBOUNCE_MS = 150;
   const IN_VIEW_RATIO = 0.25;
@@ -33,8 +42,8 @@ const initHomeHeroVideo = () => {
     try {
       playPromise = video.play();
       await playPromise;
-    } catch (error) {
-      // Một số trình duyệt vẫn có thể chặn play tạm thời; bỏ qua để lần sync tiếp theo thử lại.
+    } catch {
+      // Autoplay policy — lần sync sau thử lại
     } finally {
       playPromise = null;
     }
@@ -57,7 +66,6 @@ const initHomeHeroVideo = () => {
     }
 
     if (isInView) {
-      // Theo autoplay policy: chỉ unmute sau click/touch thật.
       video.muted = !hasUserInteracted;
       await safePlay(actionId);
       return;
@@ -90,7 +98,16 @@ const initHomeHeroVideo = () => {
     }
   };
 
-  // Khởi tạo: muted + play ngay để có khung hình sớm, tránh màn hình rỗng.
+  const onVisibilityChange = async () => {
+    if (document.hidden) {
+      safePause(++pendingActionId);
+      return;
+    }
+
+    isInView = isVideoInViewport();
+    await syncVideoState();
+  };
+
   isInView = isVideoInViewport();
   syncVideoState();
 
@@ -107,31 +124,37 @@ const initHomeHeroVideo = () => {
 
   observer.observe(video);
 
-  // Debounce scroll để không bắn play/pause liên tục khi cuộn nhanh.
   window.addEventListener('scroll', syncVideoStateDebounced, { passive: true });
   window.addEventListener('resize', syncVideoStateDebounced, { passive: true });
-
-  // Chỉ click/touch mới được xem là user gesture hợp lệ cho bật tiếng.
   window.addEventListener('click', markUserInteraction, { passive: true });
   window.addEventListener('touchstart', markUserInteraction, { passive: true });
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
-  document.addEventListener('visibilitychange', async () => {
-    if (document.hidden) {
-      safePause(++pendingActionId);
-      return;
+  homeHeroVideoCleanup = () => {
+    pendingActionId += 1;
+    if (scrollDebounceTimer) {
+      clearTimeout(scrollDebounceTimer);
+      scrollDebounceTimer = null;
     }
-
-    isInView = isVideoInViewport();
-    await syncVideoState();
-  });
+    observer.disconnect();
+    window.removeEventListener('scroll', syncVideoStateDebounced, { passive: true });
+    window.removeEventListener('resize', syncVideoStateDebounced, { passive: true });
+    window.removeEventListener('click', markUserInteraction, { passive: true });
+    window.removeEventListener('touchstart', markUserInteraction, { passive: true });
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    try {
+      video.pause();
+    } catch {
+      // ignore
+    }
+  };
 };
 
-if (document.readyState === 'complete') {
-  initHomeHeroVideo();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHomeHeroVideo, { once: true });
 } else {
-  window.addEventListener('load', initHomeHeroVideo, { once: true });
+  initHomeHeroVideo();
 }
+
 document.addEventListener('app:page-ready', initHomeHeroVideo);
-//End Xử lí video đầu home
-
-
+document.addEventListener('turbo:before-cache', teardownHomeHeroVideo);
