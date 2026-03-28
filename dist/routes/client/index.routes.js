@@ -13,6 +13,7 @@ const playlist_routes_1 = __importDefault(require("./playlist.routes"));
 const follow_artist_routes_1 = __importDefault(require("./follow.artist.routes"));
 const listen_history_routes_1 = __importDefault(require("./listen.history.routes"));
 const explore_routes_1 = __importDefault(require("./explore.routes"));
+const song_api_routes_1 = __importDefault(require("./song.api.routes"));
 const clientRoutes = (app) => {
     app.use(`/auth`, auth_routes_1.default);
     app.use(`/artist`, artist_routes_1.default);
@@ -24,6 +25,7 @@ const clientRoutes = (app) => {
     app.use(`/user`, user_routes_1.default);
     app.use(`/playlist`, playlist_routes_1.default);
     app.use(`/history`, listen_history_routes_1.default);
+    app.use(`/api/songs`, song_api_routes_1.default);
     app.use(`/`, follow_artist_routes_1.default);
 };
 exports.default = clientRoutes;

@@ -129,7 +129,7 @@ block main
                   button.px-3.py-1.text-xs.font-bold.rounded-md.bg-secondary.text-on-secondary(type="button" data-save-playlist) Lưu
                   button.px-3.py-1.text-xs.font-bold.rounded-md.border.border-outline-variant.text-on-surface-variant(type="button" data-cancel-edit-playlist) Huy
               if playlist.songs && playlist.songs.length
-                ul.space-y-4.overflow-y-auto.pr-2.no-scrollbar(class="max-h-[450px]")
+                ul.space-y-4.overflow-y-auto.pr-2.no-scrollbar(class="max-h-[450px]" data-play-queue data-play-context="playlist" data-play-context-id=String(playlist._id))
                   each song, index in playlist.songs
                     li.relative.group
                       //- Hiệu ứng đổ bóng gradient nền khi hover cả dòng

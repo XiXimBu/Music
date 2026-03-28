@@ -68,6 +68,8 @@ const teardownCarousels = () => {
 const initTopicCarousel = () => {
   bindCarousel('topic-container', 'topic-prev', 'topic-next');
   bindCarousel('latest-container', 'latest-prev', 'latest-next');
+  bindCarousel('for-you-container', 'for-you-prev', 'for-you-next');
+  bindCarousel('artist-container', 'artist-prev', 'artist-next');
 };
 
 if (document.readyState === 'loading') {

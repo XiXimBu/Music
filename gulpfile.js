@@ -17,7 +17,7 @@ gulp.task('js', () => {
         .pipe(gulp.dest('public/dist/js')); // Nơi chứa file đã gom
 });
 
-// 2. Nhiệm vụ "Rình mò": Hễ bạn sửa file là nó tự chạy lại
+// Sửa file JS thì nó tự chạy lại
 gulp.task('watch', () => {
     gulp.watch('public/client/javascript/**/*.js', gulp.series('js'));
 });

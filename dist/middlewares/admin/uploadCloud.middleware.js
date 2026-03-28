@@ -26,10 +26,15 @@ const getExecutablePath = () => {
         return process.env.YT_DLP_BIN;
     if (process.env.YOUTUBE_DL_PATH)
         return process.env.YOUTUBE_DL_PATH;
-    const bundled = path_1.default.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
-    if (fs_1.default.existsSync(bundled))
-        return bundled;
-    return "yt-dlp";
+    const bundledCandidates = [
+        path_1.default.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp.exe"),
+        path_1.default.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"),
+    ];
+    for (const p of bundledCandidates) {
+        if (fs_1.default.existsSync(p))
+            return p;
+    }
+    return process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
 };
 const ytExecutable = getExecutablePath();
 const ytDlpRunner = youtube_dl_exec_1.default.create(ytExecutable);
@@ -68,45 +73,18 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
         try {
             await fs_1.default.promises.mkdir(tempDir, { recursive: true });
             const baseOptions = {
-                format: "bestaudio[ext=m4a]/bestaudio/best",
-                extractorArgs: "youtube:player_client=ios,android,mweb;formats=missing_pot",
                 extractAudio: true,
                 audioFormat: "mp3",
                 ffmpegLocation: ffmpeg_static_1.default,
                 noPlaylist: true,
-                forceIpv4: true,
-                addHeader: [
-                    "user-agent:Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
-                    "accept-language:vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
-                ],
                 postprocessorArgs: "ffmpeg:-b:a 128k",
-                rmCacheDir: true,
-                noCheckCertificates: true,
+                preferFreeFormats: true,
                 quiet: true,
                 noWarnings: true,
                 output: outTemplate,
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
-            const isRequestedFormatNotAvailable = (err) => {
-                const stderr = String(err?.stderr || "");
-                const msg = String(err?.message || "");
-                return (stderr.includes("Requested format is not available") ||
-                    msg.includes("Requested format is not available"));
-            };
-            try {
-                await ytDlpRunner(url, baseOptions);
-            }
-            catch (err) {
-                if (!isRequestedFormatNotAvailable(err))
-                    throw err;
-                const retry1 = {
-                    ...baseOptions,
-                    format: undefined,
-                    extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
-                    noCheckFormats: true,
-                };
-                await ytDlpRunner(url, retry1);
-            }
+            await ytDlpRunner(url, baseOptions);
             const waitForReadable = async (p, attempts = 15) => {
                 for (let i = 0; i < attempts; i++) {
                     try {
@@ -155,14 +133,6 @@ function streamUploadFromYoutube(youtubeUrl, cloudinaryAccount) {
             resolve(uploaded);
         }
         catch (err) {
-            const isSpawnMissingBinary = String(err?.code || "") === "ENOENT";
-            if (isSpawnMissingBinary) {
-                console.error("YT-DLP binary not found. Set YT_DLP_BIN/YOUTUBE_DL_PATH or ensure `yt-dlp` is in PATH.", {
-                    ytExecutable,
-                    YT_DLP_BIN: process.env.YT_DLP_BIN,
-                    YOUTUBE_DL_PATH: process.env.YOUTUBE_DL_PATH,
-                });
-            }
             console.error("YT-DLP Error:", err);
             reject(err);
         }

@@ -100,12 +100,12 @@ block main
           h2.text-3xl.font-headline.font-bold Popular Tracks
           p.text-on-surface-variant.text-sm Top hits based on views
         
-        .space-y-2
-          if popularTracks && popularTracks.length > 0
+        if popularTracks && popularTracks.length > 0
+          div.space-y-2(data-play-queue data-play-context="artist" data-play-context-id=String(artists[0]._id))
             each song in popularTracks
               +trackItem(song)
-          else
-            p.text-center.py-8.text-on-surface-variant No tracks found.
+        else
+          p.text-center.py-8.text-on-surface-variant No tracks found.
 
       aside.space-y-12
         section

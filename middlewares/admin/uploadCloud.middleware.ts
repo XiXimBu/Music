@@ -36,14 +36,20 @@ const hasCookiesFile = (() => {
     }
 })();
 
-// youtube-dl-exec có thể không có binary local khi YOUTUBE_DL_SKIP_DOWNLOAD=1.
-// Ưu tiên path từ env; nếu không có thì fallback gọi "yt-dlp" từ PATH hệ thống.
+// Local/Render: ưu tiên executable path từ env, fallback binary bundled, cuối cùng dùng PATH hệ thống.
 const getExecutablePath = (): string => {
     if (process.env.YT_DLP_BIN) return process.env.YT_DLP_BIN;
     if (process.env.YOUTUBE_DL_PATH) return process.env.YOUTUBE_DL_PATH;
-    const bundled = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
-    if (fs.existsSync(bundled)) return bundled;
-    return "yt-dlp";
+
+    const bundledCandidates = [
+        path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp.exe"),
+        path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"),
+    ];
+    for (const p of bundledCandidates) {
+        if (fs.existsSync(p)) return p;
+    }
+
+    return process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
 };
 
 const ytExecutable = getExecutablePath();
@@ -97,67 +103,20 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
         try {
             await fs.promises.mkdir(tempDir, { recursive: true });
 
-            // Cấu hình “tổng lực” cho môi trường Cloud (Render).
-            // IMPORTANT: dùng flags object (không truyền argv array), tránh lỗi flatten kiểu `-0`, `--13`, `--14`.
+            // Cấu hình youtube-dl-exec đơn giản, ưu tiên chạy local ổn định.
             const baseOptions: any = {
-                // 1) ÉP LẤY LUỒNG ÂM THANH (ưu tiên m4a trước)
-                format: "bestaudio[ext=m4a]/bestaudio/best",
-
-                // 2) GIẢ LẬP THIẾT BỊ “SẠCH” (iOS/Android/mweb) + hiện formats missing POT
-                extractorArgs: "youtube:player_client=ios,android,mweb;formats=missing_pot",
-
                 extractAudio: true,
                 audioFormat: "mp3",
                 ffmpegLocation: ffmpeg,
                 noPlaylist: true,
-
-                // 3) DÙNG IPv4 (Render/Cloud ổn định hơn)
-                forceIpv4: true,
-
-                // 4) HEADER TỐI ƯU
-                addHeader: [
-                    "user-agent:Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
-                    "accept-language:vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
-                ],
-
                 postprocessorArgs: "ffmpeg:-b:a 128k",
-
-                rmCacheDir: true,
-                noCheckCertificates: true,
+                preferFreeFormats: true,
                 quiet: true,
                 noWarnings: true,
-
-                // output template (file tạm)
                 output: outTemplate,
-
-                // Cookies để vượt chặn datacenter IP (Render)
                 ...(hasCookiesFile ? { cookies: cookiePath } : {}),
             };
-
-            const isRequestedFormatNotAvailable = (err: unknown): boolean => {
-                const stderr = String((err as any)?.stderr || "");
-                const msg = String((err as any)?.message || "");
-                return (
-                    stderr.includes("Requested format is not available") ||
-                    msg.includes("Requested format is not available")
-                );
-            };
-
-            try {
-                await ytDlpRunner(url, baseOptions);
-            } catch (err) {
-                if (!isRequestedFormatNotAvailable(err)) throw err;
-
-                // Retry #1: bỏ format + chuyển client sang mweb/tv, bỏ dash/hls
-                const retry1: any = {
-                    ...baseOptions,
-                    format: undefined,
-                    extractorArgs: "youtube:player_client=mweb,tv;skip=dash,hls",
-                    // đừng check formats quá chặt
-                    noCheckFormats: true,
-                };
-                await ytDlpRunner(url, retry1);
-            }
+            await ytDlpRunner(url, baseOptions);
 
             // Windows: đôi khi file vừa tạo xong bị lock ngắn (AV/indexer)
             const waitForReadable = async (p: string, attempts = 15) => {
@@ -215,17 +174,6 @@ function streamUploadFromYoutube(youtubeUrl: string, cloudinaryAccount: Cloudina
             uploadedOk = true;
             resolve(uploaded);
         } catch (err) {
-            const isSpawnMissingBinary = String((err as any)?.code || "") === "ENOENT";
-            if (isSpawnMissingBinary) {
-                console.error(
-                    "YT-DLP binary not found. Set YT_DLP_BIN/YOUTUBE_DL_PATH or ensure `yt-dlp` is in PATH.",
-                    {
-                        ytExecutable,
-                        YT_DLP_BIN: process.env.YT_DLP_BIN,
-                        YOUTUBE_DL_PATH: process.env.YOUTUBE_DL_PATH,
-                    }
-                );
-            }
             console.error("YT-DLP Error:", err);
             reject(err);
         } finally {

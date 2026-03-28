@@ -1,5 +1,6 @@
 import { PipelineStage, Types } from "mongoose";
 import { ListeningHistory } from "../../models/listeningHistory.model";
+import SongMood from "../../models/songMood.model";
 import { formatFromNow } from "../../helpers/helpertime";
 
 const RECENT_HISTORY_LIMIT = 5;
@@ -29,6 +30,141 @@ export type RecentHistoryItem = {
     artistNames: string;
     duration: number;
   } | null;
+};
+
+/** Gu âm nhạc 7 ngày: top nghệ sĩ / chủ đề / mood + bài gần đây để loại khi đề xuất (có giới hạn). */
+export type UserTasteProfile = {
+  topArtistIds: Types.ObjectId[];
+  topTopicIds: Types.ObjectId[];
+  /** Nhãn mood (lowercase) user hay gặp qua bài đã nghe — đề xuất cân bằng tâm trạng. */
+  topMoodSlugs: string[];
+  /** Chỉ các bài unique gần nhất (tối đa `PLAYED_EXCLUDE_CAP`) — tránh $nin quá lớn làm cạn kết quả. */
+  playedSongIds: Types.ObjectId[];
+};
+
+const TASTE_TOP_LIMIT = 5;
+const TASTE_LOOKBACK_DAYS = 7;
+/** Số bài tối đa đưa vào $nin: user nghe nhiều sẽ không loại hết catalog nghệ sĩ yêu thích. */
+const PLAYED_EXCLUDE_CAP = 100;
+
+/**
+ * Phân tích ListeningHistory (7 ngày): đếm tần suất artist/topic trên từng lần nghe,
+ * lấy top nghệ sĩ/chủ đề + danh sách bài mới nghe (capped) để tránh lặp gần đây mà vẫn đủ ứng viên.
+ */
+export const getUserTasteProfile = async (userId: string): Promise<UserTasteProfile> => {
+  if (!Types.ObjectId.isValid(userId)) {
+    return { topArtistIds: [], topTopicIds: [], topMoodSlugs: [], playedSongIds: [] };
+  }
+
+  const uid = new Types.ObjectId(userId);
+  const since = new Date();
+  since.setDate(since.getDate() - TASTE_LOOKBACK_DAYS);
+
+  const pipeline: PipelineStage[] = [
+    { $match: { userId: uid, listenedAt: { $gte: since } } },
+    {
+      $lookup: {
+        from: "songs",
+        localField: "songId",
+        foreignField: "_id",
+        as: "songInfo",
+      },
+    },
+    { $unwind: { path: "$songInfo", preserveNullAndEmptyArrays: false } },
+  ];
+
+  const history = await ListeningHistory.aggregate(pipeline).exec();
+
+  const artistCount: Record<string, number> = {};
+  const topicCount: Record<string, number> = {};
+
+  for (const record of history) {
+    const song = record.songInfo as {
+      artists?: Types.ObjectId[];
+      topics?: Types.ObjectId[];
+    };
+    const artists = Array.isArray(song?.artists) ? song.artists : [];
+    const topics = Array.isArray(song?.topics) ? song.topics : [];
+
+    for (const aid of artists) {
+      const k = String(aid);
+      artistCount[k] = (artistCount[k] || 0) + 1;
+    }
+    for (const tid of topics) {
+      const k = String(tid);
+      topicCount[k] = (topicCount[k] || 0) + 1;
+    }
+  }
+
+  const topArtistIds = Object.keys(artistCount)
+    .sort((a, b) => artistCount[b] - artistCount[a])
+    .slice(0, TASTE_TOP_LIMIT)
+    .filter((id) => Types.ObjectId.isValid(id))
+    .map((id) => new Types.ObjectId(id));
+
+  const topTopicIds = Object.keys(topicCount)
+    .sort((a, b) => topicCount[b] - topicCount[a])
+    .slice(0, TASTE_TOP_LIMIT)
+    .filter((id) => Types.ObjectId.isValid(id))
+    .map((id) => new Types.ObjectId(id));
+
+  const songIdsInHistory = [
+    ...new Set(
+      history
+        .map((r) => r.songId)
+        .filter(Boolean)
+        .map((id: Types.ObjectId) => String(id))
+    ),
+  ].filter((id) => Types.ObjectId.isValid(id));
+
+  let topMoodSlugs: string[] = [];
+  if (songIdsInHistory.length) {
+    const moodRows = await SongMood.find({
+      songId: { $in: songIdsInHistory.map((id) => new Types.ObjectId(id)) },
+    })
+      .select({ songId: 1, mood: 1 })
+      .lean()
+      .exec();
+
+    const moodsBySong = new Map<string, string[]>();
+    for (const row of moodRows) {
+      const sid = String(row.songId);
+      if (!moodsBySong.has(sid)) moodsBySong.set(sid, []);
+      moodsBySong.get(sid)!.push(String(row.mood || "").toLowerCase());
+    }
+
+    const moodListenCount: Record<string, number> = {};
+    for (const record of history) {
+      const sid = String(record.songId);
+      for (const m of moodsBySong.get(sid) || []) {
+        if (!m) continue;
+        moodListenCount[m] = (moodListenCount[m] || 0) + 1;
+      }
+    }
+
+    topMoodSlugs = Object.keys(moodListenCount)
+      .sort((a, b) => moodListenCount[b] - moodListenCount[a])
+      .slice(0, TASTE_TOP_LIMIT);
+  }
+
+  const historySorted = [...history].sort(
+    (a, b) => new Date(b.listenedAt).getTime() - new Date(a.listenedAt).getTime()
+  );
+  const playedSongIds: Types.ObjectId[] = [];
+  const seenPlay = new Set<string>();
+  for (const record of historySorted) {
+    const sid = record.songId;
+    if (!sid) continue;
+    const k = String(sid);
+    if (seenPlay.has(k)) continue;
+    seenPlay.add(k);
+    if (Types.ObjectId.isValid(k)) {
+      playedSongIds.push(new Types.ObjectId(k));
+    }
+    if (playedSongIds.length >= PLAYED_EXCLUDE_CAP) break;
+  }
+
+  return { topArtistIds, topTopicIds, topMoodSlugs, playedSongIds };
 };
 
 export type TopSongItem = {
@@ -271,4 +407,10 @@ export const getTopSongs = async (userId: string, limit = 5): Promise<TopSongIte
   }));
 };
 
-export default { saveHistory, syncUserHistory, getRecentHistory, getTopSongs };
+export default {
+  saveHistory,
+  syncUserHistory,
+  getRecentHistory,
+  getTopSongs,
+  getUserTasteProfile,
+};

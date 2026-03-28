@@ -86,7 +86,6 @@ export const attachAuthStatus = async (
 			return;
 		}
 
-		// Token có tồn tại → cần DB; đảm bảo connect trước để tránh buffering timeout trên Vercel
 		await database.connect();
 
 		const user = await User.findOne({

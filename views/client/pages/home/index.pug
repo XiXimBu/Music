@@ -120,7 +120,7 @@ block main
                 button#latest-next.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest")
                     span.material-symbols-outlined chevron_right
 
-        #latest-container.flex.overflow-x-auto.gap-6.pb-4.no-scrollbar
+        #latest-container.flex.overflow-x-auto.gap-6.pb-4.no-scrollbar(data-play-queue data-play-context="home" data-play-context-id="latest")
             if latestSongs && latestSongs.length
                 each song in latestSongs
                     +songCard(song)
@@ -135,26 +135,34 @@ block main
                 h2.font-headline.font-bold.text-3xl Moods & Vibes
 
         .grid.grid-cols-2.gap-6(class="md:grid-cols-5")
-            mixin moodCard(imgSrc, emoji, label)
-                .group.relative.aspect-square.rounded-xl.overflow-hidden.cursor-pointer
+            mixin moodCard(imgSrc, emoji, label, moodSlug)
+                a.group.relative.aspect-square.rounded-xl.overflow-hidden.cursor-pointer.block(href=`/?mood=${encodeURIComponent(moodSlug)}`)
                     img.w-full.h-full.object-cover.transition-transform.duration-700(src=imgSrc alt=label class="group-hover:scale-110")
                     .absolute.inset-0.bg-gradient-to-t(class="from-black/80 via-transparent to-transparent")
                     .absolute.bottom-4.left-4.right-4.glass.py-2.px-4.rounded-xl.flex.items-center.gap-2
                         span.text-xl= emoji
                         span.font-medium.text-sm= label
 
-            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuC3ouI8kFm-lZUvg-ihRsnsDibVvLBSfWAlyHNAb0mDYA9ykG1FilIR1__PB2in120GnDLdp2aekjx3FdX-1tD1oRrx8xkgKGJKeKdZeDUtXLBn-jbX-C9On7ntozTJETuDGYYT9ZBhdBPm0Vj0G20_SqEdCLVs0cv4_ytLA5439fQgKuTQGhlHdlPKnOXn3hCTNawvQF3Pxqb7xjxYaYi9J5srPezAkCMfBj0TxnVfq2DGrSUVgJWF3kXgL9_YKU55pqCE1RctHJU", "😌", "Chill")
-            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAMvROGBnKzpUgjy9tBsnSHRqmZ9U3EZ_X5sxRg2bkW7dxgRVMl3zGcTXOgQgsoANRqL2Zeb84Bt1orLup2BdaDLHGLeMsW97OMtpgaWKPw5pdPCyNq5AIgVt-N66SSHGLph9PDu5MHHr68eAq8K6nGJPraab6FIYBllZH5jeKIyjdMGaBTsENa0a-Q3Ga3-rDs9cLCWI9-FvQP_87jmjLTv8FmdD38-3ibj8Ol4VttIA1YGxf2m5qLZcudD9EQZ5HS9GxzpoZn2XE", "😢", "Buồn")
-            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAv2AidEUgZkiKImXTn63V7DlttrIqPP6p6LsK-PKKIyomYBZ3e31p5tJwb3g1Sv_y6u--WB-xvd5u9B87VPo2vSMMf8I8atCiNSYMwxwaDMS5XJQuexkVyEwGOo6hGIaPYLiXpOEb2g7nPcjFHFguERq8_dE5_MqS8BS-RTrhZ2xUxtSyw4FB5RZHreXiUJbRz7mJ0bg0N9aCCr9RuYQa8o-UkyqBw-J17Y5R9rhecRNxb_Ta-8tWdTD0qTtxXqx74y3VeoikZSCA", "🌙", "Đêm khuya")
-            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuBS-XFVkPq3hbzbvTCY09hJH61LizCxUKiA99lP6BH88wR8I7Wn0D_uqVA-H10ypOo2GypnWf0g_CrNwn7UDFr41KvxjrSynNEtN-FOmggbyFqZHqn9kljAz-7iTvgKrMIRwudoBYDV4suucGQWVsAUYPaz2pVBYkMTEQJNsndAdbDByUWn2um-SudlD6G9yAQIZn1conHZgOfFKEDwkAYWDps3HbbZI6V1zwyEhafq8TwAYwZOv_xFVPJlEECTP81uCBWcc_kflAU", "🔥", "Năng lượng")
-            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAkoO-XubFCBYYyPd7dD-hYmmyjp6NqC86ui3HFOoPMrbnPgufq5V6_IRGnGefx80snzNjjfvJ5RYi6aXMEQAwoFRppbv0SrJNTCqQ1A6zX0k-ywrBWOl2yyTDxKTRlGhA87caTvX2iWoZnd-oKz8wu_ZGHcDT2Mm0GzwQ46ecpOzgvVVCwXX6G4V7H4E-q112LAjbI0plxHl05TpNwN4_XErZ-G9TYwQbTmpj318FFxHxz6ufK7Nin4gZSx8xHY7nRCvRt8JR1i3w", "💔", "Thất tình")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuC3ouI8kFm-lZUvg-ihRsnsDibVvLBSfWAlyHNAb0mDYA9ykG1FilIR1__PB2in120GnDLdp2aekjx3FdX-1tD1oRrx8xkgKGJKeKdZeDUtXLBn-jbX-C9On7ntozTJETuDGYYT9ZBhdBPm0Vj0G20_SqEdCLVs0cv4_ytLA5439fQgKuTQGhlHdlPKnOXn3hCTNawvQF3Pxqb7xjxYaYi9J5srPezAkCMfBj0TxnVfq2DGrSUVgJWF3kXgL9_YKU55pqCE1RctHJU", "😌", "Chill", "chill")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAMvROGBnKzpUgjy9tBsnSHRqmZ9U3EZ_X5sxRg2bkW7dxgRVMl3zGcTXOgQgsoANRqL2Zeb84Bt1orLup2BdaDLHGLeMsW97OMtpgaWKPw5pdPCyNq5AIgVt-N66SSHGLph9PDu5MHHr68eAq8K6nGJPraab6FIYBllZH5jeKIyjdMGaBTsENa0a-Q3Ga3-rDs9cLCWI9-FvQP_87jmjLTv8FmdD38-3ibj8Ol4VttIA1YGxf2m5qLZcudD9EQZ5HS9GxzpoZn2XE", "😢", "Buồn", "sad")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAv2AidEUgZkiKImXTn63V7DlttrIqPP6p6LsK-PKKIyomYBZ3e31p5tJwb3g1Sv_y6u--WB-xvd5u9B87VPo2vSMMf8I8atCiNSYMwxwaDMS5XJQuexkVyEwGOo6hGIaPYLiXpOEb2g7nPcjFHFguERq8_dE5_MqS8BS-RTrhZ2xUxtSyw4FB5RZHreXiUJbRz7mJ0bg0N9aCCr9RuYQa8o-UkyqBw-J17Y5R9rhecRNxb_Ta-8tWdTD0qTtxXqx74y3VeoikZSCA", "🌙", "Đêm khuya", "night")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuBS-XFVkPq3hbzbvTCY09hJH61LizCxUKiA99lP6BH88wR8I7Wn0D_uqVA-H10ypOo2GypnWf0g_CrNwn7UDFr41KvxjrSynNEtN-FOmggbyFqZHqn9kljAz-7iTvgKrMIRwudoBYDV4suucGQWVsAUYPaz2pVBYkMTEQJNsndAdbDByUWn2um-SudlD6G9yAQIZn1conHZgOfFKEDwkAYWDps3HbbZI6V1zwyEhafq8TwAYwZOv_xFVPJlEECTP81uCBWcc_kflAU", "🔥", "Năng lượng", "energetic")
+            +moodCard("https://lh3.googleusercontent.com/aida-public/AB6AXuAkoO-XubFCBYYyPd7dD-hYmmyjp6NqC86ui3HFOoPMrbnPgufq5V6_IRGnGefx80snzNjjfvJ5RYi6aXMEQAwoFRppbv0SrJNTCqQ1A6zX0k-ywrBWOl2yyTDxKTRlGhA87caTvX2iWoZnd-oKz8wu_ZGHcDT2Mm0GzwQ46ecpOzgvVVCwXX6G4V7H4E-q112LAjbI0plxHl05TpNwN4_XErZ-G9TYwQbTmpj318FFxHxz6ufK7Nin4gZSx8xHY7nRCvRt8JR1i3w", "💔", "Thất tình", "heartbreak")
 
-    //- 3. For You Section — top bài nghe nhiều nhất (theo lịch sử, không trùng, tối đa 5)
+    //- 3. For You — song_moods + views; ?mood=slug
     section.px-6.py-12(class="md:px-12")
         .flex.flex-col.gap-4.mb-8(class="md:flex-row md:items-center md:justify-between")
-            h2.font-headline.font-bold.text-3xl Dành cho bạn
+            div
+                h2.font-headline.font-bold.text-3xl Dành cho bạn
+                if typeof forYouMood !== 'undefined' && forYouMood
+                    p.text-sm.text-on-surface-variant.mt-1 Theo tâm trạng: #[span.font-medium.text-primary= forYouMood] — bài nhiều lượt nghe trong nhóm này.
+            .flex.items-center.gap-2
+                button#for-you-prev.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_left
+                button#for-you-next.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_right
 
-        .flex.overflow-x-auto.gap-8.pb-4.no-scrollbar
+        #for-you-container.flex.overflow-x-auto.gap-8.pb-4.no-scrollbar(data-play-queue data-play-context="home" data-play-context-id="for-you")
             mixin forYouMusicCard(song)
                 .flex-none.w-48.group.cursor-pointer(
                     class="md:w-56"
@@ -177,14 +185,19 @@ block main
                 each song in forYouTopSongs
                     +forYouMusicCard(song)
             else
-                p.text-sm.text-on-surface-variant.px-1 Nghe nhạc khi đăng nhập để nhận gợi ý theo lịch sử của bạn.
+                p.text-sm.text-on-surface-variant.px-1 Chưa có bài gắn nhãn tâm trạng này — thử mood khác hoặc gắn nhãn trong admin / seed.
 
     //- 4. Featured Artists Section
     section.px-6.py-12(class="md:px-12")
-        .flex.flex-col.gap-4.mb-8(class="md:flex-row md:items-center md:justify-between")
+        .flex.justify-between.items-center.mb-8
             h2.font-headline.font-bold.text-3xl Nghệ sĩ tiêu biểu
-            
-        .flex.overflow-x-auto.gap-8.pb-4.no-scrollbar
+            .flex.items-center.gap-2
+                button#artist-prev.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_left
+                button#artist-next.w-10.h-10.rounded-full.border.flex.items-center.justify-center.transition-colors(class="border-outline-variant/30 hover:bg-surface-container-highest text-white")
+                    span.material-symbols-outlined chevron_right
+
+        #artist-container.flex.overflow-x-auto.gap-8.pb-4.no-scrollbar
             mixin artistCard(imgSrc, name, slug)
                 a.flex-none.text-center.group.cursor-pointer.w-32(class="md:w-40" href=(slug ? `/artist/detail/${encodeURIComponent(slug)}` : '#'))
                     div(class="relative aspect-square rounded-full overflow-hidden mb-4 border-2 border-transparent transition-all p-1 group-hover:border-secondary")
@@ -228,7 +241,7 @@ block main
                 h2.font-headline.font-bold.text-2xl(class="md:text-3xl") Bảng xếp hạng
                 span.material-symbols-outlined.text-on-surface-variant trending_up
 
-            .space-y-4
+            .space-y-4(data-play-queue data-play-context="home" data-play-context-id="rank")
                 if rankSongs && rankSongs.length
                     //- --- TOP 1 SONG ---
                     .relative.group

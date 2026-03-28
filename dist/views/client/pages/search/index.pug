@@ -85,6 +85,6 @@ block main
           h2(class="font-headline text-sm uppercase tracking-widest text-on-surface-variant ml-1") Popular Songs
           span(class="text-xs font-bold text-primary cursor-pointer hover:underline uppercase tracking-tighter") View All
 
-        .space-y-2
+        .space-y-2(data-play-queue data-play-context="search")
           each song in songs
             +trackItem(song)

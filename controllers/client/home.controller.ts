@@ -1,23 +1,36 @@
 import { Request, Response } from "express";
-import HomeService from "../../services/client/home.service";
-import listenHistoryService from "../../services/client/listen.history.service";
+import HomeService, {
+	resolveHomeMood,
+	HOME_FOR_YOU_PERSONALIZED_LIMIT,
+	type RankedSong,
+} from "../../services/client/home.service";
 
 export const getHome = async (req: Request, res: Response): Promise<void> => {
 	try {
+		const mood = resolveHomeMood(req.query.mood);
 		const userId = res.locals.user?.id;
 
-		const [artists, albums, topics, rankSongs, latestSongs, topFromHistory] = await Promise.all([
+		const [artists, albums, topics, rankSongs, latestSongs] = await Promise.all([
 			HomeService.getFeaturedArtists(),
 			HomeService.getLatestAlbums(),
 			HomeService.getFeaturedTopics(),
 			HomeService.getRandomRankSongs(),
 			HomeService.getLatestSongs(),
-			userId ? listenHistoryService.getTopSongs(userId, 5) : Promise.resolve([]),
 		]);
 
-		const forYouTopSongs = (topFromHistory || [])
-			.map((row) => row.song)
-			.filter((s): s is NonNullable<typeof s> => !!s && !!s.audioUrl);
+		let forYouTopSongs: RankedSong[] = [];
+		if (userId) {
+			forYouTopSongs = (await HomeService.getPersonalizedForYouRanked(userId, HOME_FOR_YOU_PERSONALIZED_LIMIT)).filter(
+				(s) => !!s.audioUrl
+			);
+		}
+		if (!forYouTopSongs.length) {
+			const moodSongs = await HomeService.getTopSongsByMood(mood, 5);
+			forYouTopSongs = moodSongs.filter((s) => !!s.audioUrl);
+		}
+		if (!forYouTopSongs.length) {
+			forYouTopSongs = await HomeService.getRandomRankSongs();
+		}
 
 		res.render(
 			"client/pages/home/index",
@@ -29,6 +42,7 @@ export const getHome = async (req: Request, res: Response): Promise<void> => {
 				rankSongs,
 				latestSongs,
 				forYouTopSongs,
+				forYouMood: mood,
 			},
 			(err, html) => {
 				if (err) {
@@ -49,6 +63,7 @@ export const getHome = async (req: Request, res: Response): Promise<void> => {
 			rankSongs: [],
 			latestSongs: [],
 			forYouTopSongs: [],
+			forYouMood: resolveHomeMood(undefined),
 			error: "Có lỗi xảy ra",
 		});
 	}

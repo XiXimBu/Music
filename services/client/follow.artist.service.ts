@@ -67,7 +67,7 @@ export const followArtist = async (
 		throw error;
 	}
 };
-
+ 
 export const unfollowArtist = async (
 	userId: string,
 	rawArtistId: string | undefined

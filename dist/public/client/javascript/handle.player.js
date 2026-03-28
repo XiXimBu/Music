@@ -1,9 +1,17 @@
-// player-logic.js
-import { getTrackDataFromButton, getPlaylistElements } from './handle.track-data.js';
+// player-logic.js — queue theo ngữ cảnh + radio khi hết list
+import {
+  getTrackDataFromButton,
+  getPlaylistElements,
+  buildQueueFromButton,
+  normalizeAudioUrl
+} from './handle.track-data.js';
 
 let currentHowl = null;
 let currentTrackUrl = '';
-let currentIndex = -1;
+/** Danh sách phát hiện tại (metadata từng bài) */
+let playerQueue = [];
+let queueCurrentIndex = -1;
+let playbackContext = { type: 'none', id: '' };
 let progressRafId = null;
 let isRepeat = false;
 let isShuffle = false;
@@ -13,6 +21,11 @@ let hasBoundPlayerEvents = false;
 let _lastProgressPercent = -1;
 const getPlaylist = () => getPlaylistElements();
 let _lastHistoryProgressEmitSecond = -1;
+
+/** Khi true: RAF không đọc seek() để vẽ thanh (tránh race với HTML5). Tắt qua Howler `onseek` hoặc khi thả chuột kéo. */
+let suppressProgressFromHowl = false;
+/** Đang kéo thanh tiến độ: bỏ qua `onseek` (mỗi lần kéo gọi seek nhiều lần). */
+let isPointerScrubbingProgress = false;
 
 const emitPlaybackEvent = (name, detail) => {
   document.dispatchEvent(new CustomEvent(name, { detail }));
@@ -45,6 +58,31 @@ const debug = (...args) => {
 };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const resetUserSeekState = () => {
+  suppressProgressFromHowl = false;
+  isPointerScrubbingProgress = false;
+};
+
+/** Howler đã đồng bộ seek với audio (sau tua phím / seek không phải lúc đang kéo chuột). */
+const clearSuppressAfterHowlSeek = () => {
+  if (isPointerScrubbingProgress) return;
+  suppressProgressFromHowl = false;
+  _lastProgressPercent = -1;
+  if (currentHowl) {
+    updateProgressBar(Number(currentHowl.seek()) || 0);
+  }
+};
+
+/** Thả chuột sau kéo thanh: `onseek` bị bỏ qua trong lúc kéo nên tắt suppress tại đây. */
+const finishPointerScrubbingProgress = () => {
+  isPointerScrubbingProgress = false;
+  suppressProgressFromHowl = false;
+  _lastProgressPercent = -1;
+  if (currentHowl) {
+    updateProgressBar(Number(currentHowl.seek()) || 0);
+  }
+};
 
 function stopProgress() {
   if (progressRafId !== null) {
@@ -174,7 +212,7 @@ const isEditableElement = (element) => {
 
 const isTypingInFormField = () => isEditableElement(document.activeElement);
 
-const bindPointerDrag = (container, { canStart, onRatioChange }) => {
+const bindPointerDrag = (container, { canStart, onRatioChange, onDragStart, onDragEnd }) => {
   if (!container) return;
 
   let activePointerId = null;
@@ -194,6 +232,7 @@ const bindPointerDrag = (container, { canStart, onRatioChange }) => {
     }
 
     activePointerId = null;
+    onDragEnd?.();
   };
 
   container.style.touchAction = 'none';
@@ -203,6 +242,7 @@ const bindPointerDrag = (container, { canStart, onRatioChange }) => {
     if (canStart && !canStart()) return;
 
     activePointerId = event.pointerId;
+    onDragStart?.();
     container.setPointerCapture?.(activePointerId);
     event.preventDefault();
     scheduler.flush(getPointerRatio(event, container));
@@ -219,6 +259,7 @@ const bindPointerDrag = (container, { canStart, onRatioChange }) => {
   container.addEventListener('lostpointercapture', () => {
     activePointerId = null;
     scheduler.cancel();
+    onDragEnd?.();
   });
 };
 
@@ -231,7 +272,6 @@ function updateProgress() {
 
   const duration = currentHowl.duration() || 0;
   if (!duration) {
-    // Not loaded yet — set to 0 and try again only while playing.
     updateProgressBar(0);
     if (currentHowl.playing && currentHowl.playing()) {
       progressRafId = requestAnimationFrame(updateProgress);
@@ -245,19 +285,20 @@ function updateProgress() {
   const percent = (current / duration) * 100;
   const roundedSecond = Math.floor(current);
 
-  if (currentTrackMeta?.songId && roundedSecond !== _lastHistoryProgressEmitSecond) {
-    _lastHistoryProgressEmitSecond = roundedSecond;
-    emitPlaybackEvent('music:playback-progress', {
-      songId: currentTrackMeta.songId,
-      currentTime: current,
-      duration
-    });
-  }
+  if (!suppressProgressFromHowl) {
+    if (currentTrackMeta?.songId && roundedSecond !== _lastHistoryProgressEmitSecond) {
+      _lastHistoryProgressEmitSecond = roundedSecond;
+      emitPlaybackEvent('music:playback-progress', {
+        songId: currentTrackMeta.songId,
+        currentTime: current,
+        duration
+      });
+    }
 
-  // Only update DOM when percent moves enough to avoid excessive writes.
-  if (Math.abs(percent - _lastProgressPercent) > 0.2 || percent === 0 || percent === 100) {
-    updateProgressBar(current);
-    _lastProgressPercent = percent;
+    if (Math.abs(percent - _lastProgressPercent) > 0.2 || percent === 0 || percent === 100) {
+      updateProgressBar(current);
+      _lastProgressPercent = percent;
+    }
   }
 
   if (currentHowl.playing && currentHowl.playing()) {
@@ -273,65 +314,88 @@ function startProgress() {
   progressRafId = requestAnimationFrame(updateProgress);
 }
 
-const handleSeek = (event) => {
-  if (!currentHowl) return;
-  const container = playerEls.progressContainer;
-  if (!container) return;
-
-  const ratio = getPointerRatio(event, container);
-  const duration = currentHowl.duration() || 0;
-  if (!duration) return;
-
-  const newTime = clamp(ratio, 0, 1) * duration;
-  currentHowl.seek(newTime);
-  // Reflect immediately in UI
-  updateProgressBar(newTime);
-};
-
-const seekTo = (timeInSeconds) => {
+const seekTo = (timeInSeconds, options = {}) => {
+  const { userInitiated = false } = options;
   if (!currentHowl) return;
 
   const duration = currentHowl.duration();
   if (!duration) return;
 
   const nextSeek = clamp(Number(timeInSeconds) || 0, 0, duration);
+
+  if (userInitiated) {
+    suppressProgressFromHowl = true;
+  }
   currentHowl.seek(nextSeek);
   updateProgressBar(nextSeek);
 };
 
 const seekBy = (deltaInSeconds) => {
   if (!currentHowl) return;
-  seekTo((Number(currentHowl.seek()) || 0) + deltaInSeconds);
+  const base = Number(currentHowl.seek()) || 0;
+  seekTo(base + deltaInSeconds, { userInitiated: true });
 };
 
 const getRandomTrackIndex = (excludedIndex) => {
-  const playlist = getPlaylist();
-  if (!playlist.length) return -1;
-  if (playlist.length === 1) return 0;
+  if (!playerQueue.length) return -1;
+  if (playerQueue.length === 1) return 0;
 
   let nextIndex = excludedIndex;
   while (nextIndex === excludedIndex) {
-    nextIndex = Math.floor(Math.random() * playlist.length);
+    nextIndex = Math.floor(Math.random() * playerQueue.length);
   }
 
   return nextIndex;
 };
 
-const playTrackByIndex = (index, options = {}) => {
-  const { toggleIfSame = false } = options;
-  const playlist = getPlaylist();
+const fetchAndAppendRadioThenPlayNext = async () => {
+  const meta = currentTrackMeta;
+  if (!meta?.songId) {
+    debug('Radio: no songId — cannot recommend');
+    return;
+  }
+  const excludeIds = [...new Set(playerQueue.map((t) => t.songId).filter(Boolean))];
+  try {
+    const params = new URLSearchParams({
+      songId: meta.songId,
+      excludeIds: excludeIds.join(',')
+    });
+    const res = await fetch(`/api/songs/recommend-next?${params}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const songs = data.songs || [];
+    if (!songs.length) {
+      debug('Radio: empty list');
+      return;
+    }
+    const newTracks = songs.map((s) => ({
+      url: normalizeAudioUrl(s.audioUrl),
+      songId: String(s._id),
+      title: s.title || 'Unknown',
+      artist: s.artistNames || 'Unknown',
+      cover: s.coverImage || '/images/default-song.png'
+    }));
+    playerQueue = playerQueue.concat(newTracks);
+    debug('Radio: appended', { added: newTracks.length, total: playerQueue.length });
+    playTrackAtQueueIndex(queueCurrentIndex + 1);
+  } catch (e) {
+    console.error('[Player] recommend-next', e);
+  }
+};
 
-  if (index < 0 || index >= playlist.length) {
-    debug('Invalid index or empty playlist', { index, playlistLength: playlist.length });
+const playTrackAtQueueIndex = (index, options = {}) => {
+  const { toggleIfSame = false } = options;
+
+  if (index < 0 || index >= playerQueue.length) {
+    debug('Invalid queue index', { index, queueLength: playerQueue.length });
     return;
   }
 
-  const btn = playlist[index];
-  const track = getTrackDataFromButton(btn);
-  debug('Step 2 - Track data', { index, track, button: btn });
+  const track = playerQueue[index];
+  debug('Queue play', { index, context: playbackContext, track });
 
   if (!track || !track.url) {
-    debug('Step 2 FAIL - Missing track url', { index, track });
+    debug('Missing track url', { index, track });
     return;
   }
 
@@ -343,17 +407,17 @@ const playTrackByIndex = (index, options = {}) => {
 
   if (currentHowl) {
     cancelProgressAnimation();
+    resetUserSeekState();
     currentHowl.stop();
     currentHowl.unload();
   }
 
-  currentIndex = index;
+  queueCurrentIndex = index;
   currentTrackUrl = track.url;
   currentTrackMeta = track;
   _lastHistoryProgressEmitSecond = -1;
   syncStickyInfo(track);
   updateProgressBar(0);
-  debug('Step 3 - Create Howl', { src: track.url });
   if (track.songId) {
     emitPlaybackEvent('music:track-start', { songId: track.songId });
   }
@@ -363,14 +427,13 @@ const playTrackByIndex = (index, options = {}) => {
     format: ['mp3'],
     html5: true,
     onplay: () => {
-      debug('Step 4 - onplay fired', { url: track.url });
       setPlayIcon(true);
-      // Start smooth RAF-driven progress updates
       startProgress();
     },
+    onseek: () => {
+      clearSuppressAfterHowlSeek();
+    },
     onpause: () => {
-      debug('onpause fired', { url: track.url });
-      // Stop updates when paused and reflect current position
       stopProgress();
       updateProgressBar(currentHowl ? currentHowl.seek() : 0);
       setPlayIcon(false);
@@ -382,7 +445,7 @@ const playTrackByIndex = (index, options = {}) => {
       debug('PLAY ERROR', { id, err, url: track.url });
     },
     onend: () => {
-      debug('Track ended', { url: track.url, isRepeat });
+      debug('Track ended', { isRepeat });
       stopProgress();
 
       if (isRepeat) {
@@ -395,32 +458,37 @@ const playTrackByIndex = (index, options = {}) => {
     }
   });
 
-  debug('Step 4 - Call play()', { url: track.url });
   currentHowl.play();
 };
 
 const playNextTrack = () => {
-  const playlist = getPlaylist();
-  if (!playlist.length) return;
+  if (!playerQueue.length) return;
 
-  const nextIndex = isShuffle
-    ? getRandomTrackIndex(currentIndex)
-    : (currentIndex + 1) % playlist.length;
+  if (isShuffle) {
+    playTrackAtQueueIndex(getRandomTrackIndex(queueCurrentIndex));
+    return;
+  }
 
-  playTrackByIndex(nextIndex);
+  if (queueCurrentIndex < playerQueue.length - 1) {
+    playTrackAtQueueIndex(queueCurrentIndex + 1);
+    return;
+  }
+
+  void fetchAndAppendRadioThenPlayNext();
 };
 
 const playPreviousTrack = () => {
-  const playlist = getPlaylist();
-  if (!playlist.length) return;
+  if (!playerQueue.length) return;
 
-  const previousIndex = isShuffle
-    ? getRandomTrackIndex(currentIndex)
-    : currentIndex <= 0
-      ? playlist.length - 1
-      : currentIndex - 1;
+  if (isShuffle) {
+    playTrackAtQueueIndex(getRandomTrackIndex(queueCurrentIndex));
+    return;
+  }
 
-  playTrackByIndex(previousIndex);
+  const previousIndex =
+    queueCurrentIndex <= 0 ? playerQueue.length - 1 : queueCurrentIndex - 1;
+
+  playTrackAtQueueIndex(previousIndex);
 };
 
 const handleKeyboardShortcuts = (event) => {
@@ -452,9 +520,8 @@ const handleKeyboardShortcuts = (event) => {
 
 const handleMainPlayPauseClick = () => {
   if (!currentHowl) {
-    const currentPlaylist = getPlaylist();
-    if (!currentPlaylist.length) return;
-    playTrackByIndex(currentIndex >= 0 ? currentIndex : 0);
+    if (!playerQueue.length) return;
+    playTrackAtQueueIndex(queueCurrentIndex >= 0 ? queueCurrentIndex : 0);
     return;
   }
 
@@ -500,10 +567,19 @@ const bindPlayerElementEvents = () => {
         if (!currentHowl) return false;
         return Boolean(currentHowl.duration());
       },
+      onDragStart: () => {
+        isPointerScrubbingProgress = true;
+        suppressProgressFromHowl = true;
+      },
       onRatioChange: (ratio) => {
         const duration = currentHowl?.duration() || 0;
-        if (!duration) return;
-        seekTo(duration * clamp(ratio, 0, 1));
+        if (!duration || !currentHowl) return;
+        const nextSeek = duration * clamp(ratio, 0, 1);
+        currentHowl.seek(nextSeek);
+        updateProgressBar(nextSeek);
+      },
+      onDragEnd: () => {
+        finishPointerScrubbingProgress();
       }
     });
   }
@@ -517,13 +593,6 @@ const bindPlayerElementEvents = () => {
     });
   }
 
-  if (playerEls.progressContainer && playerEls.progressContainer.dataset.boundSeekClick !== '1') {
-    playerEls.progressContainer.dataset.boundSeekClick = '1';
-    playerEls.progressContainer.addEventListener('click', (event) => {
-      if (isTypingInFormField()) return;
-      handleSeek(event);
-    });
-  }
 };
 
 export const initPlayer = () => {
@@ -550,13 +619,23 @@ export const initPlayer = () => {
     const playAllBtn = event.target.closest('[button-play-all]');
     if (playAllBtn) {
       event.preventDefault();
-      const currentPlaylist = getPlaylist();
-      if (!currentPlaylist.length) {
-        debug('Play All: no [button-play-track] in page');
+      const root =
+        playAllBtn.closest('[data-play-queue]') || document.querySelector('main [data-play-queue]');
+      if (!root) {
+        debug('Play All: no [data-play-queue] on page');
         return;
       }
-      debug('Play All: start from index 0', { count: currentPlaylist.length });
-      playTrackByIndex(0);
+      const buttons = Array.from(root.querySelectorAll('[button-play-track]'));
+      const queue = buttons.map(getTrackDataFromButton).filter((t) => t && t.url);
+      if (!queue.length) return;
+      playerQueue = queue;
+      playbackContext = {
+        type: root.getAttribute('data-play-context') || 'list',
+        id: root.getAttribute('data-play-context-id') || ''
+      };
+      queueCurrentIndex = 0;
+      debug('Play All', { count: queue.length, playbackContext });
+      playTrackAtQueueIndex(0);
       return;
     }
 
@@ -565,27 +644,16 @@ export const initPlayer = () => {
 
     event.preventDefault();
 
-    const currentPlaylist = getPlaylist();
-    const idx = currentPlaylist.indexOf(btn);
-    if (idx < 0) return;
+    const { queue, index, context } = buildQueueFromButton(btn);
+    if (!queue.length) return;
 
-    const computedStyle = window.getComputedStyle(btn);
-    debug('Step 1 - Click received', {
-      idx,
-      pointerEvents: computedStyle.pointerEvents,
-      opacity: computedStyle.opacity,
-      zIndex: computedStyle.zIndex,
-      rect: btn.getBoundingClientRect(),
-      attributes: {
-        buttonPlayTrack: btn.getAttribute('button-play-track'),
-        dataAudioUrl: btn.getAttribute('data-audio-url'),
-        dataSongTitle: btn.getAttribute('data-song-title'),
-        dataSongArtist: btn.getAttribute('data-song-artist'),
-        dataSongCover: btn.getAttribute('data-song-cover')
-      }
-    });
+    playerQueue = queue;
+    playbackContext = context;
+    queueCurrentIndex = index;
 
-    playTrackByIndex(idx, { toggleIfSame: true });
+    debug('Play click', { index, queueLen: queue.length, playbackContext });
+
+    playTrackAtQueueIndex(index, { toggleIfSame: true });
   });
 
   // Improve progress element performance and add click-to-seek

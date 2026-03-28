@@ -1,12 +1,118 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTopSongs = exports.getRecentHistory = exports.saveHistory = exports.syncUserHistory = void 0;
+exports.getTopSongs = exports.getRecentHistory = exports.saveHistory = exports.syncUserHistory = exports.getUserTasteProfile = void 0;
 const mongoose_1 = require("mongoose");
 const listeningHistory_model_1 = require("../../models/listeningHistory.model");
+const songMood_model_1 = __importDefault(require("../../models/songMood.model"));
 const helpertime_1 = require("../../helpers/helpertime");
 const RECENT_HISTORY_LIMIT = 5;
 const USER_HISTORY_CAP = 20;
 const PRUNE_BATCH_SIZE = 1000;
+const TASTE_TOP_LIMIT = 5;
+const TASTE_LOOKBACK_DAYS = 7;
+const PLAYED_EXCLUDE_CAP = 100;
+const getUserTasteProfile = async (userId) => {
+    if (!mongoose_1.Types.ObjectId.isValid(userId)) {
+        return { topArtistIds: [], topTopicIds: [], topMoodSlugs: [], playedSongIds: [] };
+    }
+    const uid = new mongoose_1.Types.ObjectId(userId);
+    const since = new Date();
+    since.setDate(since.getDate() - TASTE_LOOKBACK_DAYS);
+    const pipeline = [
+        { $match: { userId: uid, listenedAt: { $gte: since } } },
+        {
+            $lookup: {
+                from: "songs",
+                localField: "songId",
+                foreignField: "_id",
+                as: "songInfo",
+            },
+        },
+        { $unwind: { path: "$songInfo", preserveNullAndEmptyArrays: false } },
+    ];
+    const history = await listeningHistory_model_1.ListeningHistory.aggregate(pipeline).exec();
+    const artistCount = {};
+    const topicCount = {};
+    for (const record of history) {
+        const song = record.songInfo;
+        const artists = Array.isArray(song?.artists) ? song.artists : [];
+        const topics = Array.isArray(song?.topics) ? song.topics : [];
+        for (const aid of artists) {
+            const k = String(aid);
+            artistCount[k] = (artistCount[k] || 0) + 1;
+        }
+        for (const tid of topics) {
+            const k = String(tid);
+            topicCount[k] = (topicCount[k] || 0) + 1;
+        }
+    }
+    const topArtistIds = Object.keys(artistCount)
+        .sort((a, b) => artistCount[b] - artistCount[a])
+        .slice(0, TASTE_TOP_LIMIT)
+        .filter((id) => mongoose_1.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose_1.Types.ObjectId(id));
+    const topTopicIds = Object.keys(topicCount)
+        .sort((a, b) => topicCount[b] - topicCount[a])
+        .slice(0, TASTE_TOP_LIMIT)
+        .filter((id) => mongoose_1.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose_1.Types.ObjectId(id));
+    const songIdsInHistory = [
+        ...new Set(history
+            .map((r) => r.songId)
+            .filter(Boolean)
+            .map((id) => String(id))),
+    ].filter((id) => mongoose_1.Types.ObjectId.isValid(id));
+    let topMoodSlugs = [];
+    if (songIdsInHistory.length) {
+        const moodRows = await songMood_model_1.default.find({
+            songId: { $in: songIdsInHistory.map((id) => new mongoose_1.Types.ObjectId(id)) },
+        })
+            .select({ songId: 1, mood: 1 })
+            .lean()
+            .exec();
+        const moodsBySong = new Map();
+        for (const row of moodRows) {
+            const sid = String(row.songId);
+            if (!moodsBySong.has(sid))
+                moodsBySong.set(sid, []);
+            moodsBySong.get(sid).push(String(row.mood || "").toLowerCase());
+        }
+        const moodListenCount = {};
+        for (const record of history) {
+            const sid = String(record.songId);
+            for (const m of moodsBySong.get(sid) || []) {
+                if (!m)
+                    continue;
+                moodListenCount[m] = (moodListenCount[m] || 0) + 1;
+            }
+        }
+        topMoodSlugs = Object.keys(moodListenCount)
+            .sort((a, b) => moodListenCount[b] - moodListenCount[a])
+            .slice(0, TASTE_TOP_LIMIT);
+    }
+    const historySorted = [...history].sort((a, b) => new Date(b.listenedAt).getTime() - new Date(a.listenedAt).getTime());
+    const playedSongIds = [];
+    const seenPlay = new Set();
+    for (const record of historySorted) {
+        const sid = record.songId;
+        if (!sid)
+            continue;
+        const k = String(sid);
+        if (seenPlay.has(k))
+            continue;
+        seenPlay.add(k);
+        if (mongoose_1.Types.ObjectId.isValid(k)) {
+            playedSongIds.push(new mongoose_1.Types.ObjectId(k));
+        }
+        if (playedSongIds.length >= PLAYED_EXCLUDE_CAP)
+            break;
+    }
+    return { topArtistIds, topTopicIds, topMoodSlugs, playedSongIds };
+};
+exports.getUserTasteProfile = getUserTasteProfile;
 const mapSong = (song) => {
     if (!song?._id)
         return null;
@@ -205,4 +311,10 @@ const getTopSongs = async (userId, limit = 5) => {
     }));
 };
 exports.getTopSongs = getTopSongs;
-exports.default = { saveHistory: exports.saveHistory, syncUserHistory: exports.syncUserHistory, getRecentHistory: exports.getRecentHistory, getTopSongs: exports.getTopSongs };
+exports.default = {
+    saveHistory: exports.saveHistory,
+    syncUserHistory: exports.syncUserHistory,
+    getRecentHistory: exports.getRecentHistory,
+    getTopSongs: exports.getTopSongs,
+    getUserTasteProfile: exports.getUserTasteProfile,
+};

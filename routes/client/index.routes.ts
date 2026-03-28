@@ -9,8 +9,7 @@ import playlistRoutes from "./playlist.routes";
 import followArtistRoutes from "./follow.artist.routes";
 import listenHistoryRoutes from "./listen.history.routes";
 import exploreRoutes from "./explore.routes";
-
-
+import songApiRoutes from "./song.api.routes";
 
 const clientRoutes = (app: Express): void => {
   app.use(`/auth`, authRoutes);
@@ -23,6 +22,7 @@ const clientRoutes = (app: Express): void => {
   app.use(`/user`, userRoutes);
   app.use(`/playlist`, playlistRoutes);
   app.use(`/history`, listenHistoryRoutes);
+  app.use(`/api/songs`, songApiRoutes);
   app.use(`/`, followArtistRoutes);
 };
 
